@@ -1,4 +1,6 @@
-const commentarySchema = mongoose.Schema({
+import * as mongoose from 'mongoose';
+
+const commentarySchema = new mongoose.Schema({
     username: String,
     text: String,
     date: Date

@@ -1,4 +1,6 @@
-const cameraSchema = mongoose.Schema({
+import * as mongoose from 'mongoose';
+
+const cameraSchema = new mongoose.Schema({
     brand: String,
     model: String,
     shared: Boolean, 

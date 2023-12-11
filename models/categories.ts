@@ -1,4 +1,6 @@
-const categorySchema = mongoose.Schema({
+import * as mongoose from 'mongoose';
+
+const categorySchema = new mongoose.Schema({
     name: String,
     icon: String,
 })

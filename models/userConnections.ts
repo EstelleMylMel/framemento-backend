@@ -1,4 +1,7 @@
-const userConnectionSchema = mongoose.Schema({
+//const mongoose: any = require('mongoose');
+import * as mongoose from 'mongoose';
+
+const userConnectionSchema = new mongoose.Schema({
     email: String,
     password: String,
     token: String,

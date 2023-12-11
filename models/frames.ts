@@ -1,4 +1,6 @@
-const frameSchema = mongoose.Schema({
+import * as mongoose from 'mongoose';
+
+const frameSchema = new mongoose.Schema({
     numero: Number,
     shutterSpeed: Number,
     aperture: Number,

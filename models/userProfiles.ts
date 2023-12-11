@@ -1,6 +1,7 @@
 //const mongoose = require('mongoose');
+import * as mongoose from 'mongoose';
 
-const userProfileSchema = mongoose.Schema({
+const userProfileSchema = new mongoose.Schema({
     username: String,
     profilePicture: String,
     camera: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'cameras' }],

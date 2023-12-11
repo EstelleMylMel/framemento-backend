@@ -1,4 +1,6 @@
-const likeSchema = mongoose.Schema({
+import * as mongoose from 'mongoose';
+
+const likeSchema = new mongoose.Schema({
     username: String,
 })
     

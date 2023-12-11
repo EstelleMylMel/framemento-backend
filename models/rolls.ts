@@ -1,4 +1,6 @@
-const rollSchema = mongoose.Schema({
+import * as mongoose from 'mongoose';
+
+const rollSchema = new mongoose.Schema({
     name: String,
     rollType: String,
     images: Number,
