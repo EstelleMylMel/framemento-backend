@@ -1,3 +1,5 @@
+//const mongoose: any = require('mongoose');
+
 const userConnectionSchema = mongoose.Schema({
     email: String,
     password: String,
