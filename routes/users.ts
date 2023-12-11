@@ -15,6 +15,7 @@ const newUserConnection : UserConnectionType = new UserConnection({
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   res.send('respond with a resource');
+  // pleins de modifs sur cette route
 });
 
 module.exports = router;
