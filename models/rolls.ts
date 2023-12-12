@@ -1,14 +1,16 @@
 import * as mongoose from 'mongoose';
 
-const rollSchema = new mongoose.Schema({
+import { RollType } from '../types/rolls';
+
+const rollSchema = new mongoose.Schema<RollType>({
     name: String,
     rollType: String,
     images: Number,
     pushPull: {required: false, Number},
     camera: {required: false,String},
-    framesList: [{ type: mongoose.Schema.Types.ObjectId, ref: 'frames' }]
+    framesList: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'frames' }]
 });
     
-const Roll = mongoose.model('rolls', rollSchema);
+const Roll: mongoose.Model<RollType> = mongoose.model<RollType>('rolls', rollSchema);
 
 module.exports = Roll;
