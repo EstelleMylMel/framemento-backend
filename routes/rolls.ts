@@ -4,7 +4,7 @@ import * as mongoose from 'mongoose';
 
 import { Request, Response } from 'express';    // types pour (res, req)
 
-import { RollType } from '../types/rolls';
+import { RollType } from '../types/roll';
 
 const Roll = require('../models/rolls');
 const { checkBody } = require('../modules/checkBody');
@@ -18,7 +18,7 @@ router.post('/', (req: Request, res: Response) => {
         return;
     }
 
-    Roll.findOne({ email: req.body.name })
+    Roll.findOne({ name: req.body.name })
     .then((data: RollType | null) => {
         if (data === null) {
             const newRoll = new Roll({
@@ -30,6 +30,9 @@ router.post('/', (req: Request, res: Response) => {
             newRoll.save().then((newDoc: RollType) => {
             res.json({ result: true, newRoll: newDoc, id: newDoc._id });
             });
+        }
+        else {
+            res.json({ result: false, message: "Roll with this name already exists"})
         }
     })
 });
@@ -150,15 +153,63 @@ router.post('/', (req: Request, res: Response) => {
         return;
     }
 
-    const newRoll = new Roll({
-      name: req.body.name,
-      rollType: req.body.rollType,
-      images: req.body.images,
-    });
-  
-    newRoll.save().then((newDoc: RollType) => {
-      res.json({ result: true, newRoll: newDoc, id: newDoc._id });
-    });
+    if (checkBody(req.body, ['brand', 'model'])) {
+        Camera.findOne({ brand: req.body.brand, model: req.body.model })
+        .then((data: CameraType | null) => {
+            if (data === null) {
+                const newCamera = new Camera({
+                    brand: req.body.brand,
+                    model: req.body.model
+                })
+
+                newCamera.save().then((newDoc: CameraType) => {
+                    Roll.findOne({ name: req.body.name })
+                    .then((data: RollType | null) => {
+                        if (data === null) {
+                            const newRoll = new Roll({
+                                name: req.body.name,
+                                rollType: req.body.rollType,
+                                images: req.body.images,
+                                pushPull: req.body.pushPull,
+                                camera: newDoc._id,
+                                framesList: []  // à voir !!!
+                            });
+                        
+                            newRoll.save().then((newDoc: RollType) => {
+                            res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+                            });
+                        }
+                        else {
+                            res.json({ result: false, message: "Roll with this name already exists"})
+                        }
+                    })
+                })
+            }
+            else {
+                Roll.findOne({ name: req.body.name })
+                    .then((data: RollType | null) => {
+                        if (data === null) {
+                            const newRoll = new Roll({
+                                name: req.body.name,
+                                rollType: req.body.rollType,
+                                images: req.body.images,
+                                pushPull: req.body.pushPull,
+                                camera: data,
+                                framesList: []  // à voir !!!
+                            });
+                        
+                            newRoll.save().then((newDoc: RollType) => {
+                            res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+                            });
+                        }
+                        else {
+                            res.json({ result: false, message: "Roll with this name already exists"})
+                        }
+                    })
+
+            }
+        })
+    }
 });
 
 */

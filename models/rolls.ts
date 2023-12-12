@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-import { RollType } from '../types/rolls';
+import { RollType } from '../types/roll';
 
 const rollSchema = new mongoose.Schema<RollType>({
     name: String,
