@@ -3,9 +3,9 @@ export type RollType = Document & {
     name: String,
     rollType: String,
     images: Number,
-    pushPull: {required: false, Number},
-    camera: {required: false,String},
-    framesList: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'frames' }]
+    pushPull?: Number,
+    camera?: mongoose.Schema.type.ObjectId,
+    framesList?: mongoose.Schema.type.ObjectId[]
 };
 
 // Ajout de _id pour être conforme avec TS

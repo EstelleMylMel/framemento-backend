@@ -2,10 +2,10 @@ export type UserProfileType = {
     _id: String,
     username: String,
     profilePicture: String,
-    camera: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'cameras' }],
-    lenses: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'lenses' }],
-    framesList: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'frames' }],
-    rollsList: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'rolls' }],
-    favorites: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'frames' }],
-    followedUsers: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'userProfiles' }]
+    cameras?: mongoose.Schema.type.ObjectId[],
+    lenses?: mongoose.Schema.type.ObjectId[],
+    framesList?: mongoose.Schema.type.ObjectId[],
+    rollsList?: mongoose.Schema.type.ObjectId[],
+    favorites?: mongoose.Schema.type.ObjectId[],
+    followedUsers?: mongoose.Schema.type.ObjectId[]
 };
