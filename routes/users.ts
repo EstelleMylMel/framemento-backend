@@ -19,6 +19,8 @@ router.post('/signup', (req: Request, res: Response) => {
     return;
   }
 
+  console.log('coucou')
+
   const { email, username, password } = req.body;
   // EQUIVALENT A :
   // const email = req.body.email;
@@ -26,7 +28,7 @@ router.post('/signup', (req: Request, res: Response) => {
   // const password = req.body.password;
 
   // S'assurer que l'utilisateur n'existe pas déjà avec son mail
-  UserConnection.findOne({ email }).then((data: UserConnectionType | null) => {
+  UserConnection.findOne({ email }).populate('profile').then((data: UserConnectionType | null) => {
       
       // Si l'utilisateur n'existe pas, on crée son compte
       if (data === null) {
@@ -51,7 +53,7 @@ router.post('/signup', (req: Request, res: Response) => {
           token: uid2(32),
           profile: userProfileID 
         })
-        newUserConnection.save().populate('profile').then( (data: UserConnectionType) => {
+        newUserConnection.save().then( (data: UserConnectionType) => {
           console.log(data)
           res.json({ result : true, username: data.profile.username, token: data.token })
         })   
