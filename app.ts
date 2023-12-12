@@ -1,5 +1,6 @@
 require('dotenv').config();
 require('./models/connection');
+const port = process.env.PORT || 3000;
 
 var express = require('express');
 var path = require('path');
@@ -25,4 +26,6 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/rolls', rollsRouter);
 
-module.exports = app;
+app.listen(port, () => {
+    console.log(`Server is Fire at http://localhost:${port}`);
+});

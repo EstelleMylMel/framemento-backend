@@ -45,6 +45,7 @@ router.post('/signup', (req: Request, res: Response) => {
 
         //Récupération de l'ID du UserProfile qui vient d'être créé
         const userProfileID = data._id;
+        // commentaire pour créer une modif -> à enlever
 
         //2ème étape : créer un userConnection
         const newUserConnection = new UserConnection({ // FAUT IL TYPER ?? PB AVEC .SAVE

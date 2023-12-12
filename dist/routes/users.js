@@ -20,7 +20,7 @@ router.post('/signup', (req, res) => {
     // const username = req.body.username;
     // const password = req.body.password;
     // S'assurer que l'utilisateur n'existe pas déjà avec son mail
-    UserConnection.findOne({ email }).then((data) => {
+    UserConnection.findOne({ email }).populate('profile').then((data) => {
         // Si l'utilisateur n'existe pas, on crée son compte
         if (data === null) {
             // Hachage du mdp
@@ -33,6 +33,7 @@ router.post('/signup', (req, res) => {
             newUserProfile.save().then((data) => {
                 //Récupération de l'ID du UserProfile qui vient d'être créé
                 const userProfileID = data._id;
+                // commentaire pour créer une modif -> à enlever
                 //2ème étape : créer un userConnection
                 const newUserConnection = new UserConnection({
                     email,
@@ -40,7 +41,7 @@ router.post('/signup', (req, res) => {
                     token: uid2(32),
                     profile: userProfileID
                 });
-                newUserConnection.save().populate('profile').then((data) => {
+                newUserConnection.save().then((data) => {
                     console.log(data);
                     res.json({ result: true, username: data.profile.username, token: data.token });
                 });
