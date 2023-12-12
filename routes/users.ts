@@ -12,10 +12,6 @@ const { checkBody } = require('../modules/checkBody');
 const uid2 = require('uid2');
 const bcrypt = require('bcrypt');
 
-router.get('/test', (req: Request, res: Response) => {
-  res.json({result: 'test'})
-})
-
 // route permettant l'inscription
 router.post('/signup', (req: Request, res: Response) => {
   if (!checkBody(req.body, ['email', 'username', 'password'])) {
@@ -23,29 +19,34 @@ router.post('/signup', (req: Request, res: Response) => {
     return;
   }
 
+  const { email, username, password } = req.body;
+  // EQUIVALENT A :
+  // const email = req.body.email;
+  // const username = req.body.username;
+  // const password = req.body.password;
+
   // S'assurer que l'utilisateur n'existe pas déjà avec son mail
-  UserConnection.findOne({ email: req.body.email }).then((data: UserConnectionType) => {
+  UserConnection.findOne({ email }).then((data: UserConnectionType) => {
       
       // Si l'utilisateur n'existe pas, on crée son compte
       if (data === null) {
       
       // Hachage du mdp
-      const hash = bcrypt.hashSync(req.body.password, 10)
+      const hash = bcrypt.hashSync(password, 10)
       
       // 1ère étape : créer un userProfile
-      const newUserProfile = new UserProfile({ // FAUT IL TYPER ??
-        username: req.body.username,
-        profilePicture: '' //AJOUTER UNE PHOTO PAR DEFAUT
+      const newUserProfile = new UserProfile({ // FAUT IL TYPER ?? PB AVEC .SAVE
+        username,
+        profilePicture: '../assets/image-profil.jpg'
       })
-      newUserProfile.save().then( (data: UserProfileType) => { //En typant en UserProfileType ça crée une erreur car il ne connait pas _id
-        console.log(data)
+      newUserProfile.save().then( (data: UserProfileType) => {
 
         //Récupération de l'ID du UserProfile qui vient d'être créé
         const userProfileID = data._id;
 
         //2ème étape : créer un userConnection
-        const newUserConnection = new UserConnection({ // FAUT IL TYPER ??
-          email: req.body.email,
+        const newUserConnection = new UserConnection({ // FAUT IL TYPER ?? PB AVEC .SAVE
+          email,
           password: hash,
           token: uid2(32),
           profile: userProfileID 
@@ -67,13 +68,18 @@ router.post('/signin', (req: Request,res: Response) => {
     res.json({ result: false, error: 'Missing or empty fields' });
   }
 
-UserConnection.findOne({ email: req.body.email }).then((data: UserConnectionType) => {
-  if (data && bcrypt.compareSync(req.body.password, data.password)) {
-    res.json({ result : true, token: data.token});
-  } else {
-    res.json({ result: false, error: 'User not found or wrong password' });
-  }
-})
+  const { email, password } = req.body;
+    // EQUIVALENT A :
+    //const email = req.body.email;
+    //const password = req.body.password;
+    
+  UserConnection.findOne({ email }).then((data: UserConnectionType) => {
+    if (data && bcrypt.compareSync(password, data.password)) {
+      res.json({ result : true, token: data.token});
+    } else {
+      res.json({ result: false, error: 'User not found or wrong password' });
+    }
+  })
 })
 
 
