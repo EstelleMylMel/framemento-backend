@@ -7,6 +7,7 @@ import { Request, Response } from 'express';    // types pour (res, req)
 import { RollType } from '../types/rolls';
 
 const Roll = require('../models/rolls');
+const { checkBody } = require('../modules/checkBody');
 
 
 /// AJOUT D'UNE PELLICULE ///
@@ -39,7 +40,7 @@ router.post('/', (req: Request, res: Response) => {
 router.get('/', (req: Request, res: Response) => {
 	Roll.find()
     .then((data: RollType[] | null) => {
-        if (data === null) {
+        if (data !== null) {
             res.json({ result: true, rolls: data });
         }
 		else {
@@ -54,8 +55,11 @@ router.get('/', (req: Request, res: Response) => {
 router.get('/:name', (req: Request, res: Response) => {
     Roll.findOne({ name: req.params.name })
     .then((data: RollType | null) => {
-        if (data === null) {
+        if (data !== null) {
             res.json({ result: true, roll: data })
+        }
+        else {
+            res.json({ result: false })
         }
     })
     .catch((error: Error) => {
