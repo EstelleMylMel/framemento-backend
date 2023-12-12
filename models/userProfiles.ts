@@ -1,10 +1,12 @@
 //const mongoose = require('mongoose');
 import * as mongoose from 'mongoose';
 
-const userProfileSchema = new mongoose.Schema({
+import {UserProfileType } from '../types/userProfile';
+
+const userProfileSchema = new mongoose.Schema<UserProfileType>({
     username: String,
     profilePicture: String,
-    camera: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'cameras' }],
+    cameras: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'cameras' }],
     lenses: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'lenses' }],
     framesList: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'frames' }],
     rollsList: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'rolls' }],
@@ -12,6 +14,6 @@ const userProfileSchema = new mongoose.Schema({
     followedUsers: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'userProfiles' }]
 });
     
-const UserProfile = mongoose.model('userProfiles', userProfileSchema);
+const UserProfile: mongoose.Model<UserProfileType> = mongoose.model<UserProfileType>('userProfiles', userProfileSchema);
 
 module.exports = UserProfile;

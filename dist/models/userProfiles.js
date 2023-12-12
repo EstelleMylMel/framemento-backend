@@ -28,7 +28,7 @@ const mongoose = __importStar(require("mongoose"));
 const userProfileSchema = new mongoose.Schema({
     username: String,
     profilePicture: String,
-    camera: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'cameras' }],
+    cameras: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'cameras' }],
     lenses: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'lenses' }],
     framesList: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'frames' }],
     rollsList: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'rolls' }],

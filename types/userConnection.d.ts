@@ -3,5 +3,6 @@ export type UserConnectionType = {
     email: String,
     password: String,
     token: String,
-    profile: { type: mongoose.Schema.Types.ObjectId, ref: 'userProfiles' }
+    profile: mongoose.Schema.type.ObjectId
+    // profile: { type: mongoose.Schema.Types.ObjectId, ref: 'userProfiles' }
 };
