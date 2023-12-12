@@ -1,32 +1,43 @@
 var express = require('express');
 var router = express.Router();
 import * as mongoose from 'mongoose';
+import { Request, Response } from 'express';
 
 import { UserConnectionType } from '../types/userConnection';
 import { UserProfileType } from '../types/userProfile';
 const UserConnection = require('../models/userConnections');
 const UserProfile = require('../models/userProfiles');
 
-
 const { checkBody } = require('../modules/checkBody');
-// const uid2 = require('uid2');
-// const bcrypt = require('bcrypt');
+const uid2 = require('uid2');
+const bcrypt = require('bcrypt');
 
-router.post('/signup', (req: any, res: any) => {
+router.get('/test', (req: Request, res: Response) => {
+  res.json({result: 'test'})
+})
+
+// route permettant l'inscription
+router.post('/signup', (req: Request, res: Response) => {
   if (!checkBody(req.body, ['email', 'username', 'password'])) {
     res.json({ result: false, error: 'Missing or empty fields' });
     return;
   }
 
-  UserConnection.findOne({ email: req.body.email }).then((data: any) => {
-    if (data === null) {
-
+  // S'assurer que l'utilisateur n'existe pas déjà avec son mail
+  UserConnection.findOne({ email: req.body.email }).then((data: UserConnectionType) => {
+      
+      // Si l'utilisateur n'existe pas, on crée son compte
+      if (data === null) {
+      
+      // Hachage du mdp
+      const hash = bcrypt.hashSync(req.body.password, 10)
+      
       // 1ère étape : créer un userProfile
       const newUserProfile = new UserProfile({ // FAUT IL TYPER ??
         username: req.body.username,
         profilePicture: '' //AJOUTER UNE PHOTO PAR DEFAUT
       })
-      newUserProfile.save().then( (data: any) => {
+      newUserProfile.save().then( (data: UserProfileType) => { //En typant en UserProfileType ça crée une erreur car il ne connait pas _id
         console.log(data)
 
         //Récupération de l'ID du UserProfile qui vient d'être créé
@@ -35,58 +46,35 @@ router.post('/signup', (req: any, res: any) => {
         //2ème étape : créer un userConnection
         const newUserConnection = new UserConnection({ // FAUT IL TYPER ??
           email: req.body.email,
-          password: req.body.password,
-          token: '', //AJOUTER CREATION TOKEN
+          password: hash,
+          token: uid2(32),
           profile: userProfileID 
         })
-
-          // TO BE CONTINUED...
-          
+        newUserConnection.save().then( (data: UserConnectionType) => {
+          console.log(data)
+          res.json({ result : true })
+        })   
       })
-
-      
     } else {
         res.json({ result: false, error: 'User already exists '});
       }
   });
 });
 
-  // Check if the user has not already been registered
-  /*User.findOne({ username: req.body.username }).then(data => {
-    if (data === null) {
-      const hash = bcrypt.hashSync(req.body.password, 10);
+// route permettant la connexion
+router.post('/signin', (req: Request,res: Response) => {
+  if (!checkBody(req.body, ['email', 'password'])) {
+    res.json({ result: false, error: 'Missing or empty fields' });
+  }
 
-      const newUser = new User({
-        username: req.body.username,
-        password: hash,
-        token: uid2(32),
-        canBookmark: true,
-      });
-
-      newUser.save().then(newDoc => {
-        res.json({ result: true, token: newDoc.token });
-      });
-    } else {
-      // User already exists in database
-      res.json({ result: false, error: 'User already exists' });
-    }
-  });
-});*/
-
-// router.post('/signin', (req, res) => {
-//   if (!checkBody(req.body, ['username', 'password'])) {
-//     res.json({ result: false, error: 'Missing or empty fields' });
-//     return;
-//   }
-
-//   User.findOne({ username: req.body.username }).then(data => {
-//     if (data && bcrypt.compareSync(req.body.password, data.password)) {
-//       res.json({ result: true, token: data.token });
-//     } else {
-//       res.json({ result: false, error: 'User not found or wrong password' });
-//     }
-//   });
-// });
+UserConnection.findOne({ email: req.body.email }).then((data: UserConnectionType) => {
+  if (data && bcrypt.compareSync(req.body.password, data.password)) {
+    res.json({ result : true, token: data.token});
+  } else {
+    res.json({ result: false, error: 'User not found or wrong password' });
+  }
+})
+})
 
 
 

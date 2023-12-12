@@ -1,4 +1,5 @@
 export type UserConnectionType = {
+    _id: String,
     email: String,
     password: String,
     token: String,

@@ -1,4 +1,5 @@
 export type UserProfileType = {
+    _id: String,
     username: String,
     profilePicture: String,
     camera: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'cameras' }],
