@@ -26,7 +26,7 @@ router.post('/signup', (req: Request, res: Response) => {
   // const password = req.body.password;
 
   // S'assurer que l'utilisateur n'existe pas déjà avec son mail
-  UserConnection.findOne({ email }).then((data: UserConnectionType) => {
+  UserConnection.findOne({ email }).then((data: UserConnectionType | null) => {
       
       // Si l'utilisateur n'existe pas, on crée son compte
       if (data === null) {
@@ -73,9 +73,9 @@ router.post('/signin', (req: Request,res: Response) => {
     //const email = req.body.email;
     //const password = req.body.password;
     
-  UserConnection.findOne({ email }).then((data: UserConnectionType) => {
+  UserConnection.findOne({ email }).populate('profile').then((data: UserConnectionType | null) => {
     if (data && bcrypt.compareSync(password, data.password)) {
-      res.json({ result : true, token: data.token});
+      res.json({ result : true, username: data.profile.username, token: data.token});
     } else {
       res.json({ result: false, error: 'User not found or wrong password' });
     }
