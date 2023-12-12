@@ -51,9 +51,9 @@ router.post('/signup', (req: Request, res: Response) => {
           token: uid2(32),
           profile: userProfileID 
         })
-        newUserConnection.save().then( (data: UserConnectionType) => {
+        newUserConnection.save().populate('profile').then( (data: UserConnectionType) => {
           console.log(data)
-          res.json({ result : true })
+          res.json({ result : true, username: data.profile.username, token: data.token })
         })   
       })
     } else {
