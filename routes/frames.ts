@@ -36,7 +36,7 @@ router.get('/', (req: Request, res: Response) => {
 })
 
 
-/// ENREGISTREMENT D'UNE PHOTO ///
+/// ENREGISTREMENT D'UNE PHOTO df///
 
 router.post('/', (req: Request, res: Response) => {
     if (!checkBody(req.body, ['numero', 'shutterSpeed', 'aperture', 'location', 'date', 'weather', 'shared'])) {
