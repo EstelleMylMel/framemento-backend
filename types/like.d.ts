@@ -1,4 +1,4 @@
 export type LikeType = Document & {
-    _id: String,
-    username: String
+    _id: string,
+    username: string
 };
