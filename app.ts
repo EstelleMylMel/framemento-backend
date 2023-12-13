@@ -10,6 +10,7 @@ var logger = require('morgan');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var rollsRouter = require('./routes/rolls');
+var framesRouter = require('./routes/frames');
 
 var app = express();
 
@@ -25,6 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/rolls', rollsRouter);
+app.use('/frames', framesRouter);
 
 app.listen(port, () => {
     console.log(`Server is Fire at http://localhost:${port}`);
