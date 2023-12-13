@@ -19,6 +19,8 @@ router.post('/signup', (req: Request, res: Response) => {
     return;
   }
 
+  console.log('coucou')
+
   const { email, username, password } = req.body;
   // EQUIVALENT A :
   // const email = req.body.email;
@@ -26,7 +28,7 @@ router.post('/signup', (req: Request, res: Response) => {
   // const password = req.body.password;
 
   // S'assurer que l'utilisateur n'existe pas déjà avec son mail
-  UserConnection.findOne({ email }).then((data: UserConnectionType) => {
+  UserConnection.findOne({ email }).populate('profile').then((data: UserConnectionType | null) => {
       
       // Si l'utilisateur n'existe pas, on crée son compte
       if (data === null) {
@@ -43,6 +45,7 @@ router.post('/signup', (req: Request, res: Response) => {
 
         //Récupération de l'ID du UserProfile qui vient d'être créé
         const userProfileID = data._id;
+        // commentaire pour créer une modif -> à enlever
 
         //2ème étape : créer un userConnection
         const newUserConnection = new UserConnection({ // FAUT IL TYPER ?? PB AVEC .SAVE
@@ -53,7 +56,7 @@ router.post('/signup', (req: Request, res: Response) => {
         })
         newUserConnection.save().then( (data: UserConnectionType) => {
           console.log(data)
-          res.json({ result : true })
+          res.json({ result : true, username: data.profile.username, token: data.token })
         })   
       })
     } else {
@@ -73,9 +76,9 @@ router.post('/signin', (req: Request,res: Response) => {
     //const email = req.body.email;
     //const password = req.body.password;
     
-  UserConnection.findOne({ email }).then((data: UserConnectionType) => {
+  UserConnection.findOne({ email }).populate('profile').then((data: UserConnectionType | null) => {
     if (data && bcrypt.compareSync(password, data.password)) {
-      res.json({ result : true, token: data.token});
+      res.json({ result : true, username: data.profile.username, token: data.token});
     } else {
       res.json({ result: false, error: 'User not found or wrong password' });
     }

@@ -1,6 +1,13 @@
 import * as mongoose from 'mongoose';
 
-const frameSchema = new mongoose.Schema({
+import { CameraType } from "../types/camera";
+import { CategoryType } from "../types/category";
+import { CommentaryType } from "../types/commentary";
+import { FrameType } from "../types/frame";
+import { LensType } from "../types/lens";
+import { LikeType } from "../types/like";
+
+const frameSchema = new mongoose.Schema<FrameType>({
     numero: Number,
     shutterSpeed: Number,
     aperture: Number,
@@ -8,19 +15,19 @@ const frameSchema = new mongoose.Schema({
     location: String,
     date: Date,
     weather: String,
-    camera: { required: false, type: String },
-    lens: { required: false, type: String },
+    camera: { required: false, type: mongoose.Schema<CameraType>, ref: 'cameras' },
+    lens: { required: false, type: mongoose.Schema<LensType>, ref: 'lenses' },
     title: { required: false, type: String },
     comment: { required: false, type: String },
     favorite: { required: false, type: Boolean },
-    share: { required: false, type: Boolean },
-    categories: [{ required: false, type: String }],
-    nbLikes: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'likes' }],
-    commentaries: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'commentaries' }],
+    shared: { required: false, type: Boolean },
+    categories: [{ required: false, type: mongoose.Schema<CategoryType>, ref: 'categories' }],
+    likes: [{ required: false, type: mongoose.Schema<LikeType>, ref: 'likes' }],
+    commentaries: [{ required: false, type: mongoose.Schema<CommentaryType>, ref: 'commentaries' }],
     phonePhoto: { required: false, type: String },
     argenticPhoto: { required: false, type: String },
 })
 
-const Frame = mongoose.model('frames', frameSchema);
+const Frame: mongoose.Model<FrameType> = mongoose.model<FrameType>('frames', frameSchema);
 
 module.exports = Frame;

@@ -2,15 +2,18 @@ var express = require('express');
 var router = express.Router();
 import * as mongoose from 'mongoose';
 
-import { Request, Response } from 'express';    // types pour (res, req)
-
-import { RollType } from '../types/rolls';
-
+// IMPORT MODULES
+const Camera = require('../models/cameras');
 const Roll = require('../models/rolls');
 const { checkBody } = require('../modules/checkBody');
 
+// IMPORT TYPES
+import { Request, Response } from 'express';    // types pour (res, req)
+import { CameraType } from '../types/camera';
+import { RollType } from '../types/roll';
 
-/// AJOUT D'UNE PELLICULE ///
+
+/// AJOUT D'UNE PELLICULE - AVEC CAMERA ///
 
 router.post('/', (req: Request, res: Response) => {
     if (!checkBody(req.body, ['name', 'rollType', 'images'])) {
@@ -18,20 +21,63 @@ router.post('/', (req: Request, res: Response) => {
         return;
     }
 
-    Roll.findOne({ email: req.body.name })
-    .then((data: RollType | null) => {
-        if (data === null) {
-            const newRoll = new Roll({
-                name: req.body.name,
-                rollType: req.body.rollType,
-                images: req.body.images,
-            });
-        
-            newRoll.save().then((newDoc: RollType) => {
-            res.json({ result: true, newRoll: newDoc, id: newDoc._id });
-            });
-        }
-    })
+    if (checkBody(req.body, ['brand', 'model'])) {
+        Camera.findOne({ brand: req.body.brand, model: req.body.model })
+        .then((data: CameraType | null) => {
+            if (data === null) {
+                const newCamera = new Camera({
+                    brand: req.body.brand,
+                    model: req.body.model
+                })
+
+                newCamera.save().then((newDoc: CameraType) => {
+                    Roll.findOne({ name: req.body.name })
+                    .then((data: RollType | null) => {
+                        if (data === null) {
+                            const newRoll = new Roll({
+                                name: req.body.name,
+                                rollType: req.body.rollType,
+                                images: req.body.images,
+                                pushPull: req.body.pushPull || null,
+                                camera: newDoc._id,
+                                framesList: []  // Aucune photo dans la pellicule au moment de sa création
+                            });
+                        
+                            newRoll.save().then((newDoc: RollType) => {
+                            res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+                            });
+                        }
+                        else {
+                            res.json({ result: false, message: "Roll with this name already exists"})
+                        }
+                    })
+                })
+            }
+            else {
+                Roll.findOne({ name: req.body.name })
+                    .then((data: RollType | null) => {
+                        if (data === null) {
+                            const newRoll = new Roll({
+                                name: req.body.name,
+                                rollType: req.body.rollType,
+                                images: req.body.images,
+                                pushPull: req.body.pushPull || null,
+                                camera: data,
+                                framesList: []  
+                            });
+                        
+                            newRoll.save().then((newDoc: RollType) => {
+                            res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+                            });
+                        }
+                        else {
+                            res.json({ result: false, message: "Roll with this name already exists"})
+                        }
+                    })
+
+            }
+        })
+    }
 });
 
 
@@ -50,7 +96,7 @@ router.get('/', (req: Request, res: Response) => {
 });
 
 
-/// CONSULTER UNE PELLICULE EN PARTICULIER ///
+/// CONSULTER UNE PELLICULE EN PARTICULIER - AFFICHER LA LISTE DE PHOTOS DE LA PELLICULE (GESTION DANS LE FRONT) ///
 
 router.get('/:name', (req: Request, res: Response) => {
     Roll.findOne({ name: req.params.name })
@@ -68,7 +114,7 @@ router.get('/:name', (req: Request, res: Response) => {
 })
 
 
-/// SUPPRIMER UNE PELLICULE EN PARTICULIER ///
+/// SUPPRIMER UNE PELLICULE EN PARTICULIER - SUPPRIMER LES IMAGES AUSSI ? ///
 
 router.delete("/:id", (req: Request, res: Response) => {
     const rollId = req.params.id;
@@ -142,7 +188,7 @@ interface RollType extends Document {
 
 
 
-/* AVEC CAMERA 
+/* SANS CAMERA 
 
 router.post('/', (req: Request, res: Response) => {
     if (!checkBody(req.body, ['name', 'rollType', 'images'])) {
@@ -150,15 +196,23 @@ router.post('/', (req: Request, res: Response) => {
         return;
     }
 
-    const newRoll = new Roll({
-      name: req.body.name,
-      rollType: req.body.rollType,
-      images: req.body.images,
-    });
-  
-    newRoll.save().then((newDoc: RollType) => {
-      res.json({ result: true, newRoll: newDoc, id: newDoc._id });
-    });
+    Roll.findOne({ name: req.body.name })
+    .then((data: RollType | null) => {
+        if (data === null) {
+            const newRoll = new Roll({
+                name: req.body.name,
+                rollType: req.body.rollType,
+                images: req.body.images,
+            });
+        
+            newRoll.save().then((newDoc: RollType) => {
+            res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+            });
+        }
+        else {
+            res.json({ result: false, message: "Roll with this name already exists"})
+        }
+    })
 });
 
 */
