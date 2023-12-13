@@ -56,7 +56,7 @@ router.post('/signup', (req: Request, res: Response) => {
         })
         newUserConnection.save().then( (data: UserConnectionType) => {
           console.log(data)
-          res.json({ result : true, username: data.profile.username, token: data.token, rolls: data.profile.rollsList })
+          res.json({ result : true, _id: data.profile._id, username: data.profile.username, token: data.token, rolls: data.profile.rollsList })
         })   
       })
     } else {
@@ -78,7 +78,7 @@ router.post('/signin', (req: Request,res: Response) => {
     
   UserConnection.findOne({ email }).populate('profile').populate('rollsList').then((data: UserConnectionType | null) => {
     if (data && bcrypt.compareSync(password, data.password)) {
-      res.json({ result : true, username: data.profile.username, token: data.token, rolls: data.rollsList});
+      res.json({ result : true, _id: data.profile._id, username: data.profile.username, token: data.token, rolls: data.profile.rollsList});
     } else {
       res.json({ result: false, error: 'User not found or wrong password' });
     }
