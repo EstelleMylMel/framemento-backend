@@ -5,23 +5,23 @@ import { LensType } from "./lens";
 import { LikeType } from "./like";
 
 export type FrameType = Document & {
-    _id: String,
-    numero: Number,
-    shutterSpeed: Number,
-    aperture: Number,
-    exposureValue?: Number, 
-    location: String, // voir ce qui est envoyé depuis le front (locapic-part4 - MapScreen - ligne 25)
+    _id: string,
+    numero: number,
+    shutterSpeed: number,
+    aperture: number,
+    exposureValue?: number, 
+    location: string, // voir ce qui est envoyé depuis le front (locapic-part4 - MapScreen - ligne 25)
     date: Date,  // heure importante pour les réglages
-    weather: String,  // voir ce que nous renvoie l'API
+    weather: string,  // voir ce que nous renvoie l'API
     camera?: CameraType,
     lens?: LensType,
-    title?: String,
-    comment?: String,
-    favorite?: Boolean,
-    shared: Boolean,
+    title?: string,
+    comment?: string,
+    favorite?: boolean,
+    shared: boolean,
     categories?: CategoryType[],
     likes?: LikeType[],
     commentaries?: CommentaryType[],
-    phonePhoto?: String,  // uri
-    argenticPhoto?: String,  // uri
+    phonePhoto?: string,  // uri
+    argenticPhoto?: string,  // uri
 };

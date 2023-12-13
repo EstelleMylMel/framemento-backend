@@ -1,7 +1,7 @@
 export type UserProfileType = {
-    _id: String,
-    username: String,
-    profilePicture: String,
+    _id: string,
+    username: string,
+    profilePicture: string,
     cameras?: mongoose.Schema.type.ObjectId[],
     lenses?: mongoose.Schema.type.ObjectId[],
     framesList?: mongoose.Schema.type.ObjectId[],

@@ -2,11 +2,11 @@ import { CameraType } from "./camera";
 import { FrameType } from "./frame";
 
 export type RollType = Document & {
-    _id: String,
-    name: String,
-    rollType: String,
-    images: Number,
-    pushPull?: Number,
+    _id: string,
+    name: string,
+    rollType: string,
+    images: number,
+    pushPull?: number,
     camera?: CameraType,
     framesList?: FrameType[]
 };

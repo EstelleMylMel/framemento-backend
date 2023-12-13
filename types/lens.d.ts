@@ -1,6 +1,6 @@
 export type LensType = Document & {
-    _id: String,
-    brand: String,
-    model: String,
-    shared: Boolean, 
+    _id: string,
+    brand: string,
+    model: string,
+    shared: boolean, 
 };

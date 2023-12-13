@@ -1,6 +1,6 @@
 export type CommentaryType = Document & {
-    _id: String,
-    username: String,
-    text: String,
+    _id: string,
+    username: string,
+    text: string,
     date: Date, 
 };

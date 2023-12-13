@@ -1,5 +1,5 @@
 export type CategoryType = Document & {
-    _id: String,
-    name: String,
-    icon: String
+    _id: string,
+    name: string,
+    icon: string
 };

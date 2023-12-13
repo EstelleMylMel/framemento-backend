@@ -5,12 +5,14 @@ import * as mongoose from 'mongoose';
 // IMPORT MODULES
 const Camera = require('../models/cameras');
 const Roll = require('../models/rolls');
+const UserProfile = require('../models/userProfiles');
 const { checkBody } = require('../modules/checkBody');
 
 // IMPORT TYPES
 import { Request, Response } from 'express';    // types pour (res, req)
 import { CameraType } from '../types/camera';
 import { RollType } from '../types/roll';
+import { UserProfileType } from '../types/userProfile';
 
 
 /// AJOUT D'UNE PELLICULE - AVEC CAMERA ///
@@ -44,7 +46,17 @@ router.post('/', (req: Request, res: Response) => {
                             });
                         
                             newRoll.save().then((newDoc: RollType) => {
-                            res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+                                res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+                                UserProfile.findByIdAndUpdate(
+                                    { _id: req.body.userId },
+                                    { $push: { rollsList: newDoc._id} },
+                                    { new: true }
+                                )
+                                .then((data: UserProfileType) => {
+                                    if (data !== null) {
+                                        res.json({ result: true })
+                                    }
+                                })
                             });
                         }
                         else {
@@ -67,7 +79,17 @@ router.post('/', (req: Request, res: Response) => {
                             });
                         
                             newRoll.save().then((newDoc: RollType) => {
-                            res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+                                res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+                                UserProfile.findByIdAndUpdate(
+                                    { _id: req.body.userId },
+                                    { $push: { rollsList: newDoc._id} },
+                                    { new: true }
+                                )
+                                .then((data: UserProfileType) => {
+                                    if (data !== null) {
+                                        res.json({ result: true })
+                                    }
+                                })
                             });
                         }
                         else {
