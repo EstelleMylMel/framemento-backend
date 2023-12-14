@@ -17,110 +17,58 @@ import { UserProfileType } from '../types/userProfile';
 
 /// AJOUT D'UNE PELLICULE - AVEC CAMERA ///
 
-router.post('/', (req: Request, res: Response) => {
-    if (!checkBody(req.body, ['name', 'rollType', 'images'])) {
-        res.json({ result: false, error: 'Missing or empty fields' });
-        return;
-    }
+router.post('/', async (req: Request, res: Response) => {
+    try {
+        if (!checkBody(req.body, ['name', 'rollType', 'images'])) {
+            return res.json({ result: false, error: 'Missing or empty fields' });
+        }
 
-    if (checkBody(req.body, ['brand', 'model'])) {
-        Camera.findOne({ brand: req.body.brand, model: req.body.model })
-        .then((data: CameraType | null) => {
-            if (data === null) {
-                const newCamera = new Camera({
+        let camera;
+        if (checkBody(req.body, ['brand', 'model'])) {
+            camera = await Camera.findOne({ brand: req.body.brand, model: req.body.model });
+
+            if (camera === null) {
+                camera = new Camera({
                     brand: req.body.brand,
                     model: req.body.model
-                })
+                });
+                await camera.save();
 
-                newCamera.save().then((newDoc: CameraType) => {
-                    UserProfile.findByIdAndUpdate(
-                        { _id: req.body.userId },
-                        { $push: { cameras: newDoc._id} },
-                        { new: true }
-                    )
-                    .then((data: UserProfileType) => {
-                        if (data !== null) {
-                            res.json({ result: true, newUser: newDoc })
-                        }
-                    })
-
-                    Roll.findOne({ name: req.body.name })
-                    .then((data: RollType | null) => {
-                        if (data === null) {
-                            const newRoll = new Roll({
-                                name: req.body.name,
-                                rollType: req.body.rollType,
-                                images: req.body.images,
-                                pushPull: req.body.pushPull || null,
-                                camera: newDoc._id,
-                                framesList: []  // Aucune photo dans la pellicule au moment de sa création
-                            });
-                        
-                            newRoll.save().then((newDoc: RollType) => {
-                                res.json({ result: true, newRoll: newDoc, id: newDoc._id });
-                                UserProfile.findByIdAndUpdate(
-                                    { _id: req.body.userId },
-                                    { $push: { rollsList: newDoc._id} },
-                                    { new: true }
-                                )
-                                .then((data: UserProfileType) => {
-                                    if (data !== null) {
-                                        res.json({ result: true, newUser: newDoc })
-                                    }
-                                })
-                            });
-                        }
-                        else {
-                            res.json({ result: false, message: "Roll with this name already exists"})
-                        }
-                    })
-                })
-            }
-            else {
-                UserProfile.findByIdAndUpdate(
+                await UserProfile.findByIdAndUpdate(
                     { _id: req.body.userId },
-                    { $push: { cameras: data._id} },
+                    { $push: { cameras: camera._id } },
                     { new: true }
-                )
-                .then((data: UserProfileType) => {
-                    if (data !== null) {
-                        res.json({ result: true })
-                    }
-                })
-                
-                Roll.findOne({ name: req.body.name })
-                    .then((data: RollType | null) => {
-                        if (data === null) {
-                            const newRoll = new Roll({
-                                name: req.body.name,
-                                rollType: req.body.rollType,
-                                images: req.body.images,
-                                pushPull: req.body.pushPull || null,
-                                camera: data,
-                                framesList: []  
-                            });
-                        
-                            newRoll.save().then((newDoc: RollType) => {
-                                res.json({ result: true, newRoll: newDoc, id: newDoc._id });
-                                UserProfile.findByIdAndUpdate(
-                                    { _id: req.body.userId },
-                                    { $push: { rollsList: newDoc._id} },
-                                    { new: true }
-                                )
-                                .then((data: UserProfileType) => {
-                                    if (data !== null) {
-                                        res.json({ result: true })
-                                    }
-                                })
-                            });
-                        }
-                        else {
-                            res.json({ result: false, message: "Roll with this name already exists"})
-                        }
-                    })
-
+                );
             }
-        })
+        }
+
+        const existingRoll = await Roll.findOne({ name: req.body.name });
+        if (existingRoll) {
+            return res.json({ result: false, message: "Roll with this name already exists" });
+        }
+
+        const newRoll = new Roll({
+            name: req.body.name,
+            rollType: req.body.rollType,
+            images: req.body.images,
+            pushPull: req.body.pushPull || null,
+            camera: camera ? camera._id : null,
+            framesList: []
+        });
+
+        await newRoll.save();
+
+        await UserProfile.findByIdAndUpdate(
+            { _id: req.body.userId },
+            { $push: { rollsList: newRoll._id } },
+            { new: true }
+        );
+        console.log(newRoll)
+
+        return res.json({ result: true, newRoll, id: newRoll._id });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ result: false, error: "Internal server error" });
     }
 });
 
@@ -260,3 +208,111 @@ router.post('/', (req: Request, res: Response) => {
 });
 
 */
+
+
+/*router.post('/', (req: Request, res: Response) => {
+    if (!checkBody(req.body, ['name', 'rollType', 'images'])) {
+        res.json({ result: false, error: 'Missing or empty fields' });
+        return;
+    }
+
+    if (checkBody(req.body, ['brand', 'model'])) {
+        Camera.findOne({ brand: req.body.brand, model: req.body.model })
+        .then((data: CameraType | null) => {
+            if (data === null) {
+                const newCamera = new Camera({
+                    brand: req.body.brand,
+                    model: req.body.model
+                })
+
+                newCamera.save().then((newDoc: CameraType) => {
+                    UserProfile.findByIdAndUpdate(
+                        { _id: req.body.userId },
+                        { $push: { cameras: newDoc._id} },
+                        { new: true }
+                    )
+                    .then((data: UserProfileType) => {
+                        if (data !== null) {
+                            res.json({ result: true, newUser: newDoc })
+                        }
+                    })
+
+                    Roll.findOne({ name: req.body.name })
+                    .then((data: RollType | null) => {
+                        if (data === null) {
+                            const newRoll = new Roll({
+                                name: req.body.name,
+                                rollType: req.body.rollType,
+                                images: req.body.images,
+                                pushPull: req.body.pushPull || null,
+                                camera: newDoc._id,
+                                framesList: []  // Aucune photo dans la pellicule au moment de sa création
+                            });
+                        
+                            newRoll.save().then((newDoc: RollType) => {
+                                res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+                                UserProfile.findByIdAndUpdate(
+                                    { _id: req.body.userId },
+                                    { $push: { rollsList: newDoc._id} },
+                                    { new: true }
+                                )
+                                .then((data: UserProfileType) => {
+                                    if (data !== null) {
+                                        res.json({ result: true, newUser: newDoc })
+                                    }
+                                })
+                            });
+                        }
+                        else {
+                            res.json({ result: false, message: "Roll with this name already exists"})
+                        }
+                    })
+                })
+            }
+            else {
+                UserProfile.findByIdAndUpdate(
+                    { _id: req.body.userId },
+                    { $push: { cameras: data._id} },
+                    { new: true }
+                )
+                .then((data: UserProfileType) => {
+                    if (data !== null) {
+                        res.json({ result: true })
+                    }
+                })
+                
+                Roll.findOne({ name: req.body.name })
+                    .then((data: RollType | null) => {
+                        if (data === null) {
+                            const newRoll = new Roll({
+                                name: req.body.name,
+                                rollType: req.body.rollType,
+                                images: req.body.images,
+                                pushPull: req.body.pushPull || null,
+                                camera: data,
+                                framesList: []  
+                            });
+                        
+                            newRoll.save().then((newDoc: RollType) => {
+                                res.json({ result: true, newRoll: newDoc, id: newDoc._id });
+                                UserProfile.findByIdAndUpdate(
+                                    { _id: req.body.userId },
+                                    { $push: { rollsList: newDoc._id} },
+                                    { new: true }
+                                )
+                                .then((data: UserProfileType) => {
+                                    if (data !== null) {
+                                        res.json({ result: true })
+                                    }
+                                })
+                            });
+                        }
+                        else {
+                            res.json({ result: false, message: "Roll with this name already exists"})
+                        }
+                    })
+
+            }
+        })
+    }
+});*/
