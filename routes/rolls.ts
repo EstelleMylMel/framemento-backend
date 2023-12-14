@@ -90,8 +90,8 @@ router.get('/', (req: Request, res: Response) => {
 
 /// CONSULTER UNE PELLICULE EN PARTICULIER - AFFICHER LA LISTE DE PHOTOS DE LA PELLICULE (GESTION DANS LE FRONT) ///
 
-router.get('/:name', (req: Request, res: Response) => {
-    Roll.findOne({ name: req.params.name })
+router.get('/:rollID', (req: Request, res: Response) => {
+    Roll.findOne({ _id: req.params.rollID })
     .then((data: RollType | null) => {
         if (data !== null) {
             res.json({ result: true, roll: data })
