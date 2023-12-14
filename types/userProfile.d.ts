@@ -1,4 +1,4 @@
-export type UserProfileType = {
+export type UserProfileType = Document & {
     _id: string,
     username: string,
     profilePicture: string,
