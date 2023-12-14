@@ -20,7 +20,7 @@ router.post('/signup', (req, res) => {
     // const username = req.body.username;
     // const password = req.body.password;
     // S'assurer que l'utilisateur n'existe pas déjà avec son mail
-    UserConnection.findOne({ email }).populate('profile').then((data) => {
+    UserConnection.findOne({ email }).then((data) => {
         // Si l'utilisateur n'existe pas, on crée son compte
         if (data === null) {
             // Hachage du mdp
@@ -43,7 +43,7 @@ router.post('/signup', (req, res) => {
                 });
                 newUserConnection.save().then((data) => {
                     console.log(data);
-                    res.json({ result: true, username: data.profile.username, token: data.token });
+                    res.json({ result: true, _id: data.profile._id, username: data.profile.username, token: data.token, rolls: data.profile.rollsList });
                 });
             });
         }
@@ -61,9 +61,9 @@ router.post('/signin', (req, res) => {
     // EQUIVALENT A :
     //const email = req.body.email;
     //const password = req.body.password;
-    UserConnection.findOne({ email }).populate('profile').then((data) => {
+    UserConnection.findOne({ email }).populate('profile').populate('rollsList').then((data) => {
         if (data && bcrypt.compareSync(password, data.password)) {
-            res.json({ result: true, username: data.profile.username, token: data.token });
+            res.json({ result: true, _id: data.profile._id, username: data.profile.username, token: data.token, rolls: data.profile.rollsList });
         }
         else {
             res.json({ result: false, error: 'User not found or wrong password' });
