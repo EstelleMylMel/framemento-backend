@@ -33,6 +33,17 @@ router.post('/', (req: Request, res: Response) => {
                 })
 
                 newCamera.save().then((newDoc: CameraType) => {
+                    UserProfile.findByIdAndUpdate(
+                        { _id: req.body.userId },
+                        { $push: { cameras: newDoc._id} },
+                        { new: true }
+                    )
+                    .then((data: UserProfileType) => {
+                        if (data !== null) {
+                            res.json({ result: true, newUser: newDoc })
+                        }
+                    })
+
                     Roll.findOne({ name: req.body.name })
                     .then((data: RollType | null) => {
                         if (data === null) {
@@ -54,7 +65,7 @@ router.post('/', (req: Request, res: Response) => {
                                 )
                                 .then((data: UserProfileType) => {
                                     if (data !== null) {
-                                        res.json({ result: true })
+                                        res.json({ result: true, newUser: newDoc })
                                     }
                                 })
                             });
@@ -66,6 +77,17 @@ router.post('/', (req: Request, res: Response) => {
                 })
             }
             else {
+                UserProfile.findByIdAndUpdate(
+                    { _id: req.body.userId },
+                    { $push: { cameras: data._id} },
+                    { new: true }
+                )
+                .then((data: UserProfileType) => {
+                    if (data !== null) {
+                        res.json({ result: true })
+                    }
+                })
+                
                 Roll.findOne({ name: req.body.name })
                     .then((data: RollType | null) => {
                         if (data === null) {
