@@ -11,7 +11,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var rollsRouter = require('./routes/rolls');
 var framesRouter = require('./routes/frames');
-// var materialRouter = require('./routes/material');
+var materialRouter = require('./routes/material');
 
 var app = express();
 
@@ -28,7 +28,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/rolls', rollsRouter);
 app.use('/frames', framesRouter);
-// app.use('/material', materialRouter);
+app.use('/material', materialRouter);
 
 
 app.listen(port, () => {

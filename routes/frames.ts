@@ -16,11 +16,11 @@ import { LensType } from '../types/lens';
 const OWM_API_KEY = process.env.OWM_API_KEY;
 
 
-/// APPUI SUR BOUTON + PHOTO ///
+/// API METEO POUR UNE LOCALISATION DONNEE ///
 
 router.get('/weather/:latitude/:longitude', (req: Request, res: Response) => {
 
-    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${req.params.latitude}&lon=${req.params.longitude}&appid=${OWM_API_KEY}&units=metric`)
+    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${req.params.latitude}&lon=${req.params.longitude}&appid=${OWM_API_KEY}&units=metric&lang=fr`)
 		.then(response => response.json())
 		.then(apiData => {
             if (apiData !== null) {
@@ -30,9 +30,7 @@ router.get('/weather/:latitude/:longitude', (req: Request, res: Response) => {
                 res.json({ result: false })
             }
         });  
-
 })
-
 
 /// ENREGISTREMENT D'UNE PHOTO ///
 
@@ -127,6 +125,8 @@ router.get('/:id', (req: Request, res: Response) => {
         res.status(500).json({ result: false, message: "Erreur lors de la récupération de l'image", error: error.message });
     });
 })
+
+/// CONSULTER LES INFORMATIONS DE L'IMAGE PRECEDENTE
 
 
 /// SUPPRIMER UNE IMAGE EN PARTICULIER ///
