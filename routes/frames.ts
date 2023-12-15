@@ -98,8 +98,10 @@ router.post('/', (req: Request, res: Response) => {
                   // Enregistrement de la frame dans la collection rolls
                     Roll.findByIdAndUpdate({_id: req.body.rollID}, {$push: {framesList: newDoc._id}}, {new: true})
                     .then((rollData: RollType) => {
-                      res.json({ result: true, newFrame: newDoc, id: newDoc._id });
-
+                      UserProfile.findByIdAndUpdate({_id : req.body.userProfileID}, {$push: {framesList: newDoc._id}}, {new: true})
+                      .then((userProfileData: UserProfileType) => {
+                        res.json({ result: true, newFrame: newDoc, id: newDoc._id });
+                      }) 
                     })
                 }); 
               })
@@ -141,8 +143,11 @@ router.post('/', (req: Request, res: Response) => {
                 // Enregistrement de la frame dans la collection rolls
                 Roll.findByIdAndUpdate({_id: req.body.rollID}, {$push: {framesList: newDoc._id}}, {new: true})
                 .then((rollData: RollType) => {
-                  res.json({ result: true, newFrame: newDoc, id: newDoc._id });
-
+                  // ajouter Frame id à userProfile ici
+                  UserProfile.findByIdAndUpdate({_id : req.body.userProfileID}, {$push: {framesList: newDoc._id}}, {new: true})
+                  .then((userProfileData: UserProfileType) => {
+                    res.json({ result: true, newFrame: newDoc, id: newDoc._id });
+                  }) 
                 })
               });       
 
