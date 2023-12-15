@@ -7,8 +7,8 @@ import { LikeType } from "./like";
 export type FrameType = Document & {
     _id: string,
     numero: number,
-    shutterSpeed: number,
-    aperture: number,
+    shutterSpeed: string,
+    aperture: string,
     exposureValue?: number, 
     location: string, // voir ce qui est envoyé depuis le front (locapic-part4 - MapScreen - ligne 25)
     date: Date,  // heure importante pour les réglages

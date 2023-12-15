@@ -9,8 +9,8 @@ import { LikeType } from "../types/like";
 
 const frameSchema = new mongoose.Schema<FrameType>({
     numero: Number,
-    shutterSpeed: Number,
-    aperture: Number,
+    shutterSpeed: String,
+    aperture: String,
     exposureValue: { required: false, type: Number }, 
     location: String,
     date: Date,

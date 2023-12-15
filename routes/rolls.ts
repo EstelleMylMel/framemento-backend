@@ -30,7 +30,7 @@ router.post('/', async (req: Request, res: Response) => {
             if (camera === null) {
                 camera = new Camera({
                     brand: req.body.brand,
-                    model: req.body.model
+                    model: req.body.model,
                 });
                 await camera.save();
 
