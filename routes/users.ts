@@ -76,9 +76,21 @@ router.post('/signin', (req: Request,res: Response) => {
     //const email = req.body.email;
     //const password = req.body.password;
     
-  UserConnection.findOne({ email }).populate('profile').populate('rollsList').then((data: UserConnectionType | null) => {
-    if (data && bcrypt.compareSync(password, data.password)) {
-      res.json({ result : true, _id: data.profile._id, username: data.profile.username, token: data.token, rolls: data.profile.rollsList});
+  UserConnection.findOne({ email }).populate('profile').then((dataConnection: UserConnectionType | null) => {
+    if (dataConnection && bcrypt.compareSync(password, dataConnection.password)) {
+
+      UserProfile.findOne({ _id: dataConnection.profile._id}).populate('rollsList').then((dataProfile: UserProfileType | null) => {
+        dataProfile ? 
+          res.json({ 
+            result : true, 
+            _id: dataProfile._id, 
+            username: dataProfile.username, 
+            token: dataConnection.token, 
+            rolls: dataProfile.rollsList
+          }) : 
+            res.json({ result: false });
+      })
+
     } else {
       res.json({ result: false, error: 'User not found or wrong password' });
     }
@@ -86,5 +98,30 @@ router.post('/signin', (req: Request,res: Response) => {
 })
 
 
+// route GET
+router.get('/:username', (req: Request, res: Response) => {
+    
+  UserProfile.findOne({ username: req.params.username }).populate('rollsList').then((dataProfile: UserProfileType | null) => {
+    if (dataProfile !== null) {
+      res.json({ result: true, rolls: dataProfile.rollsList})
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+})
+
 
 module.exports = router;
+
+
+
+/*
+UserConnection.findOne({ email }).populate('profile').populate('rollsList').then((data: UserConnectionType | null) => {
+    if (data && bcrypt.compareSync(password, data.password)) {
+      res.json({ result : true, _id: data.profile._id, username: data.profile.username, token: data.token, rolls: data.profile.rollsList});
+    } else {
+      res.json({ result: false, error: 'User not found or wrong password' });
+    }
+  })
+*/

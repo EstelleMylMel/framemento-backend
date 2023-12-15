@@ -18,15 +18,9 @@ const OWM_API_KEY = process.env.OWM_API_KEY;
 
 /// APPUI SUR BOUTON + PHOTO ///
 
-router.get('/', (req: Request, res: Response) => {
+router.get('/weather/:latitude/:longitude', (req: Request, res: Response) => {
 
-    // Vérification de si le frontend envoie bien la géolocalisation de l'utilisatrice lors de l'appui sur le bouton + (on fera une fonction sur un onPress du bouton + qui déclenchera la demande de localisation de l'utilisatrice. Les données récupérées seront envoyées au backend ici : voir locapic-part4 MapScreen ligne 25)
-    if (!checkBody(req.body, ['latitude', 'longitude'])) {
-        res.json({ result: false, error: 'Missing location' });
-        return;
-    }
-
-    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${req.body.latitude}&lon=${req.body.longitude}&appid=${OWM_API_KEY}&units=metric`)
+    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${req.params.latitude}&lon=${req.params.longitude}&appid=${OWM_API_KEY}&units=metric`)
 		.then(response => response.json())
 		.then(apiData => {
             if (apiData !== null) {
