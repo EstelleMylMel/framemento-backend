@@ -157,8 +157,9 @@ router.post('/', (req: Request, res: Response) => {
 
 /// AJOUTER LA PHOTO DU TELEPHONE ///
 
-router.post('/upload/photofromphone', async (req: any, res: Response) => {
+router.post('/upload', async (req: any, res: Response) => {
   
+  console.log('body upload ',req.body);
   const photoPath = `./tmp/${uniqid()}.jpg`;
   const resultMove = await req.files.photoFromFront.mv(photoPath);
 
@@ -178,6 +179,7 @@ router.post('/upload/photofromphone', async (req: any, res: Response) => {
 
 router.get('/:id', (req: Request, res: Response) => {
     Frame.findOne({ _id: req.params.id })
+    .populate('lens')
     .then((data: FrameType | null) => {
         if (data !== null) {
             res.json({ result: true, frame: data })
@@ -192,6 +194,7 @@ router.get('/:id', (req: Request, res: Response) => {
 })
 
 /// CONSULTER LES INFORMATIONS DE L'IMAGE PRECEDENTE
+
 
 
 /// SUPPRIMER UNE IMAGE EN PARTICULIER ///
@@ -214,6 +217,7 @@ router.delete("/:id", (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
   try {
+
       // Récupérez l'ID à partir des paramètres de la requête
       const frameId = req.params.id;
 
