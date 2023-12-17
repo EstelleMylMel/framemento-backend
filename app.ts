@@ -12,6 +12,8 @@ var usersRouter = require('./routes/users');
 var rollsRouter = require('./routes/rolls');
 var framesRouter = require('./routes/frames');
 var materialRouter = require('./routes/material');
+var categoriesRouter = require('./routes/categories');
+
 
 var app = express();
 
@@ -29,6 +31,8 @@ app.use('/users', usersRouter);
 app.use('/rolls', rollsRouter);
 app.use('/frames', framesRouter);
 app.use('/material', materialRouter);
+app.use('/categories', categoriesRouter);
+
 
 
 app.listen(port, () => {

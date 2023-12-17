@@ -258,7 +258,7 @@ router.put("/:frameID/like", (req: Request, res: Response) => {
 
   Frame.findByIdAndUpdate(
     { _id: req.params.frameID },
-    { $push: { likes: req.body } },
+    { $push: { likes: req.body.username } },
     { new: true }
   )
   .then((frameData: FrameType) => {
@@ -281,7 +281,7 @@ router.put("/:frameID/unlike", (req: Request, res: Response) => {
 
   Frame.findByIdAndUpdate(
     { _id: req.params.frameID },
-    { $pull: { likes: req.body } },
+    { $pull: { likes: req.body.username } },
     { new: true }
   )
   .then((frameData: FrameType) => {
