@@ -20,7 +20,7 @@ export type FrameType = Document & {
     favorite?: boolean,
     shared: boolean,
     categories?: CategoryType[],
-    likes?: LikeType[],
+    likes?: string[],
     commentaries?: CommentaryType[],
     phonePhoto?: string,  // uri
     argenticPhoto?: string,  // uri

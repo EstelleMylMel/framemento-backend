@@ -22,7 +22,7 @@ const frameSchema = new mongoose.Schema<FrameType>({
     favorite: { required: false, type: Boolean },
     shared: { required: false, type: Boolean },
     categories: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'categories' }],
-    likes: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'likes' }],
+    likes: [{ required: false, type: [String] }],
     commentaries: [{ required: false, type: mongoose.Schema.Types.ObjectId, ref: 'commentaries' }],
     phonePhoto: { required: false, type: String },
     argenticPhoto: { required: false, type: String },

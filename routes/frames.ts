@@ -8,6 +8,7 @@ const Frame = require('../models/frames');
 const { checkBody } = require('../modules/checkBody');
 const UserProfile = require('../models/userProfiles');
 const Roll = require('../models/rolls');
+const Like = require('../models/likes')
 
 // IMPORT TYPES
 import { Request, Response } from 'express';    // types pour (res, req)
@@ -246,6 +247,56 @@ router.put('/:id', async (req: Request, res: Response) => {
       res.status(500).json({ result: false, error: 'Internal Server Error' });
   }
 });
+
+
+
+/// LIKER ET UNLIKER UNE FRAME ///
+
+router.put("/:frameID/like", (req: Request, res: Response) => {
+
+  // req.body = user.username (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $push: { likes: req.body } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, likes: frameData.likes })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
+
+router.put("/:frameID/unlike", (req: Request, res: Response) => {
+
+  // req.body = user._id (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $pull: { likes: req.body } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, likes: frameData.likes })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
      
 
 
