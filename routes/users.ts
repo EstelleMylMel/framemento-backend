@@ -103,7 +103,7 @@ router.get('/:username', (req: Request, res: Response) => {
     
   UserProfile.findOne({ username: req.params.username }).populate('framesList').populate('cameras').populate('rollsList').then((dataProfile: UserProfileType | null) => {
     if (dataProfile !== null) {
-      res.json({ result: true, rolls: dataProfile.rollsList, cameras: dataProfile.cameras, frames: dataProfile.framesList})
+      res.json({ result: true, user: dataProfile, rolls: dataProfile.rollsList, cameras: dataProfile.cameras, frames: dataProfile.framesList})
     }
     else {
       res.json({ result: false })
@@ -113,6 +113,7 @@ router.get('/:username', (req: Request, res: Response) => {
 
 // LA DIFFERENCE ENTRE LA ROLLSLIST EN BDD ET LES ROLLS QUI S'AFFICHE SONT LES ROLLS DELETED
 // => LA ROUTE DELETE DOIT SUPPRIMER LES ROLLS DANS LA COLLECTION ROLLS MAIS AUSSI DANS LE USERPROFILE, CE QUI N'EST PAS LE CAS 
+
 
 
 module.exports = router;
