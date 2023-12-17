@@ -194,6 +194,24 @@ router.get('/:id', (req: Request, res: Response) => {
     });
 })
 
+
+/// CONSULTER TOUTES LES IMAGES AVEC SHARED = TRUE ///
+
+router.get('/shared/true', (req: Request, res: Response) => {
+  Frame.find({ shared: true })
+  .then((data: FrameType[]) => {
+      if (data.length > 0) {
+          res.json({ result: true, frames: data })
+      }
+      else {
+          res.json({ result: false })
+      }
+  })
+  .catch((error: Error) => {
+      res.status(500).json({ result: false, message: "Erreur lors de la récupération des images", error: error.message });
+  });
+})
+
 /// CONSULTER LES INFORMATIONS DE L'IMAGE PRECEDENTE
 
 

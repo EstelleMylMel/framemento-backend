@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 
 import { UserConnectionType } from '../types/userConnection';
 import { UserProfileType } from '../types/userProfile';
+import { FrameType } from '../types/frame';
 const UserConnection = require('../models/userConnections');
 const UserProfile = require('../models/userProfiles');
 
@@ -113,6 +114,21 @@ router.get('/:username', (req: Request, res: Response) => {
 
 // LA DIFFERENCE ENTRE LA ROLLSLIST EN BDD ET LES ROLLS QUI S'AFFICHE SONT LES ROLLS DELETED
 // => LA ROUTE DELETE DOIT SUPPRIMER LES ROLLS DANS LA COLLECTION ROLLS MAIS AUSSI DANS LE USERPROFILE, CE QUI N'EST PAS LE CAS 
+
+
+// route GET search frames shared
+router.get('/search/:tag', (req: Request, res: Response) => {
+    
+  UserProfile.findOne({ username: req.params.tag }).populate('framesList').populate('cameras').populate('rollsList').then((dataProfile: UserProfileType | null) => {
+    if (dataProfile !== null) {
+      let framesShared = dataProfile.framesList?.filter((frame: FrameType) => frame.shared === true);
+      res.json({ result: true, user: dataProfile, framesShared})
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+})
 
 
 
