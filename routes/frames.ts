@@ -180,6 +180,7 @@ router.post('/upload', async (req: any, res: Response) => {
 
 router.get('/:id', (req: Request, res: Response) => {
     Frame.findOne({ _id: req.params.id })
+    .populate('camera')
     .populate('lens')
     .then((data: FrameType | null) => {
         if (data !== null) {
