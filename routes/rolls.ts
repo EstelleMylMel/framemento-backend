@@ -6,11 +6,13 @@ import * as mongoose from 'mongoose';
 const Camera = require('../models/cameras');
 const Roll = require('../models/rolls');
 const UserProfile = require('../models/userProfiles');
+const Frame = require('../models/frames');
 const { checkBody } = require('../modules/checkBody');
 
 // IMPORT TYPES
 import { Request, Response } from 'express';    // types pour (res, req)
 import { CameraType } from '../types/camera';
+import { FrameType } from '../types/frame';
 import { RollType } from '../types/roll';
 import { UserProfileType } from '../types/userProfile';
 
@@ -107,16 +109,38 @@ router.get('/:rollID', (req: Request, res: Response) => {
 
 /// SUPPRIMER UNE PELLICULE EN PARTICULIER - SUPPRIMER LES IMAGES AUSSI ? ///
 
-router.delete("/:id", (req: Request, res: Response) => {
-    const rollId = req.params.id;
+router.delete("/:userid/:rollid", (req: Request, res: Response) => {
+    const rollId = req.params.rollid;
+    const userId = req.params.userid;
+    
 
-    Roll.deleteOne({ _id: rollId }).then((deletedRoll: any) => {
-        if (deletedRoll) {
-          res.json({ result: true, message: "Roll deleted successfully"})
-        } else {
-          res.json({ result: false, error: "Roll not found" });
-        }
-    });
+    UserProfile.findOneAndUpdate({_id: userId}, {$pull: {rollsList: rollId}}, {new: true})
+    .then((user: UserProfileType) => {
+        if (user) {
+
+            /// Supprimer toutes les frames de cette pellicule dans la collection rolls
+            Roll.findOne({_id: rollId }).populate('framesList')
+            .then((roll: RollType) => {
+                if (roll.framesList) {
+                
+                 for (const frameId of roll.framesList) {
+
+                    Frame.findByIdAndDelete({_id: frameId})
+                    .then( console.log('frame has been deleted'))
+                 }
+                } 
+            })
+
+            /// Supprimer le roll
+            Roll.deleteOne({ _id: rollId }).then((deletedRoll: any) => {
+                if (deletedRoll) {
+                res.json({ result: true, message: "Roll deleted successfully"})
+                } else {
+                res.json({ result: false, error: "Roll not found" });
+                }
+            });
+        } else { res.json({ result: false, error: "User not found" })} ;
+    })
       
 });
 

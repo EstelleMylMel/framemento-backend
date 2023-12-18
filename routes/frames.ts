@@ -159,7 +159,7 @@ router.post('/', (req: Request, res: Response) => {
 
 router.post('/upload', async (req: any, res: Response) => {
   
-  console.log('body upload ',req.body);
+  console.log('body: ', req.files.photoFromFront)
   const photoPath = `./tmp/${uniqid()}.jpg`;
   const resultMove = await req.files.photoFromFront.mv(photoPath);
 
@@ -179,7 +179,6 @@ router.post('/upload', async (req: any, res: Response) => {
 
 router.get('/:id', (req: Request, res: Response) => {
     Frame.findOne({ _id: req.params.id })
-    .populate('lens')
     .then((data: FrameType | null) => {
         if (data !== null) {
             res.json({ result: true, frame: data })
@@ -196,19 +195,39 @@ router.get('/:id', (req: Request, res: Response) => {
 /// CONSULTER LES INFORMATIONS DE L'IMAGE PRECEDENTE
 
 
-
 /// SUPPRIMER UNE IMAGE EN PARTICULIER ///
 
-router.delete("/:id", (req: Request, res: Response) => {
-  const frameId = req.params.id;
+router.delete("/:userid/:rollid/:frameid", (req: Request, res: Response) => {
 
-  Frame.deleteOne({ _id: frameId }).then((deletedFrame: any) => {
-      if (deletedFrame) {
-        res.json({ result: true, message: "Frame deleted successfully"})
-      } else {
-        res.json({ result: false, error: "Frame not found" });
-      }
-  });
+  const frameId = req.params.frameid;
+  const userId = req.params.userid;
+  const rollId = req.params.rollId;
+
+  // supprimer la frame dans la collection UserProfile
+  UserProfile.findOneAndUpdate({ _id: userId }, {$pull: {framesList: frameId}}, {new: true})
+  .then((userProfile: UserProfileType)=> {
+
+    console.log(userProfile);
+    if (userProfile) {
+
+    // supprimer la frame dans la collection rolls
+    Roll.findOneAndUpdate({ _id: rollId }, {$pull: {framesList: frameId}}, {new: true})
+    .then((roll: RollType)=> {
+
+      // supprimer la frame dans la collection frames
+      Frame.deleteOne({ _id: frameId }).then((deletedFrame: any) => {
+        if (deletedFrame) {
+          res.json({ result: true, message: "Frame deleted successfully"})
+        } else {
+          res.json({ result: false, error: "Frame not found" });
+        }
+    });
+    })
+  } else console.log('user profile not found')
+}
+  )
+
+  
     
 });
 
@@ -217,7 +236,6 @@ router.delete("/:id", (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
   try {
-
       // Récupérez l'ID à partir des paramètres de la requête
       const frameId = req.params.id;
 
