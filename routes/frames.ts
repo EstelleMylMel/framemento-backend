@@ -86,7 +86,7 @@ router.post('/', (req: Request, res: Response) => {
                     favorite: req.body.favorite || false,
                     shared: req.body.shared || false,
                     categories: [req.body.categories] || [],
-                    likes: [],
+                    likes: [req.body.likes] || [],
                     commentaries: [],
                     phonePhoto: req.body.phonePhoto || null,  // uri
                     argenticPhoto: null,
@@ -133,7 +133,7 @@ router.post('/', (req: Request, res: Response) => {
                   favorite: req.body.favorite || false,
                   shared: req.body.shared || false,
                   categories: [req.body.categories] || [],
-                  likes: [],
+                  likes: [req.body.likes] || [],
                   commentaries: [],
                   phonePhoto: req.body.phonePhoto || null,  // uri
                   argenticPhoto: null,
@@ -355,8 +355,6 @@ router.get('/search/:category', (req: Request, res: Response) => {
 /// AJOUTER ET RETIRER UNE CATEGORIE À UNE FRAME ///
 
 router.put("/:frameID/addcategory", (req: Request, res: Response) => {
-
-  console.log("hey")
 
   Frame.findByIdAndUpdate(
     { _id: req.params.frameID },
