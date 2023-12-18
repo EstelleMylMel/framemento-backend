@@ -85,7 +85,7 @@ router.post('/', (req: Request, res: Response) => {
                     comment: req.body.comment || null,
                     favorite: req.body.favorite || false,
                     shared: req.body.shared || false,
-                    categories: req.body.categories || [],
+                    categories: [req.body.categories] || [],
                     likes: [],
                     commentaries: [],
                     phonePhoto: req.body.phonePhoto || null,  // uri
@@ -132,7 +132,7 @@ router.post('/', (req: Request, res: Response) => {
                   comment: req.body.comment || null,
                   favorite: req.body.favorite || false,
                   shared: req.body.shared || false,
-                  categories: req.body.categories || [],
+                  categories: [req.body.categories] || [],
                   likes: [],
                   commentaries: [],
                   phonePhoto: req.body.phonePhoto || null,  // uri
@@ -315,7 +315,70 @@ router.put("/:frameID/unlike", (req: Request, res: Response) => {
   })
 })
 
-     
+
+// route GET search frames shared par category
+router.get('/search/:category', (req: Request, res: Response) => {
+
+  const formattedCategory = req.params.category[0].toUpperCase() + req.params.category.slice(1)
+    
+  Frame.find({categories: {$elemMatch: { $in: [ formattedCategory ]}}}).then((dataFrame: FrameType[] | null) => {
+    if (dataFrame !== null) {
+      res.json({ result: true, frames: dataFrame })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+})
+
+
+/// AJOUTER ET RETIRER UNE CATEGORIE À UNE FRAME ///
+
+router.put("/:frameID/addcategory", (req: Request, res: Response) => {
+
+  console.log("hey")
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $push: { categories: req.body.category } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, categories: frameData.categories })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
+
+router.put("/:frameID/removecategory", (req: Request, res: Response) => {
+
+  // req.body = user._id (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $pull: { categories: req.body.category } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, categories: frameData.categories })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
 
 
 module.exports = router;

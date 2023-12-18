@@ -116,10 +116,10 @@ router.get('/:username', (req: Request, res: Response) => {
 // => LA ROUTE DELETE DOIT SUPPRIMER LES ROLLS DANS LA COLLECTION ROLLS MAIS AUSSI DANS LE USERPROFILE, CE QUI N'EST PAS LE CAS 
 
 
-// route GET search frames shared
-router.get('/search/:tag', (req: Request, res: Response) => {
+// route GET search frames shared par username
+router.get('/search/:username', (req: Request, res: Response) => {
     
-  UserProfile.findOne({ username: req.params.tag }).populate('framesList').populate('cameras').populate('rollsList').then((dataProfile: UserProfileType | null) => {
+  UserProfile.findOne({ username: req.params.username }).populate('framesList').populate('cameras').populate('rollsList').then((dataProfile: UserProfileType | null) => {
     if (dataProfile !== null) {
       let framesShared = dataProfile.framesList?.filter((frame: FrameType) => frame.shared === true);
       res.json({ result: true, user: dataProfile, framesShared})

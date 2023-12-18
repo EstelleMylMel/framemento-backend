@@ -19,7 +19,7 @@ export type FrameType = Document & {
     comment?: string,
     favorite?: boolean,
     shared: boolean,
-    categories?: CategoryType[],
+    categories?: string[],
     likes?: string[],
     commentaries?: CommentaryType[],
     phonePhoto?: string,  // uri
