@@ -8,6 +8,7 @@ const Frame = require('../models/frames');
 const { checkBody } = require('../modules/checkBody');
 const UserProfile = require('../models/userProfiles');
 const Roll = require('../models/rolls');
+const Like = require('../models/likes')
 
 // IMPORT TYPES
 import { Request, Response } from 'express';    // types pour (res, req)
@@ -83,8 +84,8 @@ router.post('/', (req: Request, res: Response) => {
                     title: req.body.title || null,
                     comment: req.body.comment || null,
                     favorite: req.body.favorite || false,
-                    shared: false,
-                    categories: req.body.categories || [],
+                    shared: req.body.shared || false,
+                    categories: [req.body.categories] || [],
                     likes: [],
                     commentaries: [],
                     phonePhoto: req.body.phonePhoto || null,  // uri
@@ -130,8 +131,8 @@ router.post('/', (req: Request, res: Response) => {
                   title: req.body.title || null,
                   comment: req.body.comment || null,
                   favorite: req.body.favorite || false,
-                  shared: false,
-                  categories: req.body.categories || [],
+                  shared: req.body.shared || false,
+                  categories: [req.body.categories] || [],
                   likes: [],
                   commentaries: [],
                   phonePhoto: req.body.phonePhoto || null,  // uri
@@ -179,6 +180,8 @@ router.post('/upload', async (req: any, res: Response) => {
 
 router.get('/:id', (req: Request, res: Response) => {
     Frame.findOne({ _id: req.params.id })
+    .populate('camera')
+    .populate('lens')
     .then((data: FrameType | null) => {
         if (data !== null) {
             res.json({ result: true, frame: data })
@@ -190,6 +193,24 @@ router.get('/:id', (req: Request, res: Response) => {
     .catch((error: Error) => {
         res.status(500).json({ result: false, message: "Erreur lors de la récupération de l'image", error: error.message });
     });
+})
+
+
+/// CONSULTER TOUTES LES IMAGES AVEC SHARED = TRUE ///
+
+router.get('/shared/true', (req: Request, res: Response) => {
+  Frame.find({ shared: true })
+  .then((data: FrameType[]) => {
+      if (data.length > 0) {
+          res.json({ result: true, frames: data })
+      }
+      else {
+          res.json({ result: false })
+      }
+  })
+  .catch((error: Error) => {
+      res.status(500).json({ result: false, message: "Erreur lors de la récupération des images", error: error.message });
+  });
 })
 
 /// CONSULTER LES INFORMATIONS DE L'IMAGE PRECEDENTE
@@ -264,7 +285,120 @@ router.put('/:id', async (req: Request, res: Response) => {
       res.status(500).json({ result: false, error: 'Internal Server Error' });
   }
 });
-     
+
+
+
+/// LIKER ET UNLIKER UNE FRAME ///
+
+router.put("/:frameID/like", (req: Request, res: Response) => {
+
+  // req.body = user.username (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $push: { likes: req.body.username } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, likes: frameData.likes })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
+
+router.put("/:frameID/unlike", (req: Request, res: Response) => {
+
+  // req.body = user._id (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $pull: { likes: req.body.username } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, likes: frameData.likes })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
+
+// route GET search frames shared par category
+router.get('/search/:category', (req: Request, res: Response) => {
+
+  const formattedCategory = req.params.category[0].toUpperCase() + req.params.category.slice(1)
+    
+  Frame.find({categories: {$elemMatch: { $in: [ formattedCategory ]}}}).then((dataFrame: FrameType[] | null) => {
+    if (dataFrame !== null) {
+      res.json({ result: true, frames: dataFrame })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+})
+
+
+/// AJOUTER ET RETIRER UNE CATEGORIE À UNE FRAME ///
+
+router.put("/:frameID/addcategory", (req: Request, res: Response) => {
+
+  console.log("hey")
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $push: { categories: req.body.category } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, categories: frameData.categories })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
+
+router.put("/:frameID/removecategory", (req: Request, res: Response) => {
+
+  // req.body = user._id (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $pull: { categories: req.body.category } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, categories: frameData.categories })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
 
 
 module.exports = router;
