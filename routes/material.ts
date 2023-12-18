@@ -24,43 +24,55 @@ router.get('/camera/:id', (req: Request, res: Response) => {
     .then((userProfile: UserProfileType | null) => {
       // Vérifiez si le profil utilisateur a été trouvé
       if (!userProfile) {
-        return res.status(404).json({ result: false, message: 'User profile not found' });
+        return res.status(404).json({ result: false, message: "User profile not found" });
       }
       // Renvoyez la liste des caméras associées à l'utilisateur
       res.json({ result: true, cameras: userProfile.cameras });
     })
   })
 
-/// AJOUTER DES CAMERAS ///
+/// AJOUTER UNE CAMERA ///
 
-router.post('/camera', (req: Request, res: Response) => {
-  if (!checkBody(req.body, ['brand', 'model'])) {
-    res.json({ result: false, error: 'Missing or empty fields' });
-    return;
-  }
+router.post('/camera/:id', async (req: Request, res: Response) => {
+  try {
+      if (!checkBody(req.body, ['brand', 'model'])) {
+          return res.json({ result: false, error: 'Missing or empty fields' });
+      }
 
-  Camera.findOne({ brand: req.body.brand, model: req.body.model })
-    .then((existingCamera: CameraType | null) => {
+      const existingCamera = await Camera.findOne({ brand: req.body.brand, model : req.body.model });
+      console.log(existingCamera)
       if (existingCamera) {
-        res.json({ result: false, error: 'Camera already exists' });
-        return;
+          return res.json({ result: false, message: "Camera with this name already exists" });
       }
 
       const newCamera = new Camera({
-        brand: req.body.brand,
-        model: req.body.model,
+          brand: req.body.brand,
+          model: req.body.model,
       });
 
-      newCamera.save()
-        .then((savedCamera: CameraType) => {
-        res.json({ result: true, newCamera: savedCamera, id: savedCamera._id });
+      await newCamera.save()
+      .then ( async (camera : CameraType) => {
+           await UserProfile.findByIdAndUpdate(
+          { _id: req.params.id },
+          { $push: { cameras: camera._id } },
+          { new: true }
+      );
+      console.log(newCamera)
+
+      return res.json({ result: true, newCamera, id: camera._id });
       });
-    })
+
+   
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ result: false, error: "Internal server error" });
+  }
 });
+
 
 /// SUPPRIMER UNE CAMERA ///
 
-router.delete("/camera/:id", (req: Request, res: Response) => {
+router.delete('/camera/:id', (req: Request, res: Response) => {
   const cameraId = req.params.id;
 
   Camera.deleteOne({ _id: cameraId })
@@ -77,7 +89,7 @@ router.delete("/camera/:id", (req: Request, res: Response) => {
     })
     .then((result: any) => {
       if (result.modifiedCount > 0) {
-        // Si au moins un document a été modifié, cela signifie que la caméra a été retirée avec succès
+        // Si au moins un document a été modifié, cela signifie que la caméra a été retiré avec succès
         res.json({ result: true, message: "Camera deleted successfully" });
         console.log(result)
       } else {
@@ -104,7 +116,7 @@ router.get('/lens/:id', (req: Request, res: Response) => {
     .then((userProfile: UserProfileType | null) => {
       // Vérifiez si le profil utilisateur a été trouvé
       if (!userProfile) {
-        return res.status(404).json({ result: false, message: 'User profile not found' });
+        return res.status(404).json({ result: false, message: "User profile not found" });
       }
       // Renvoyez la liste des objectifs associées à l'utilisateur
       res.json({ result: true, lenses: userProfile.lenses });
@@ -113,33 +125,44 @@ router.get('/lens/:id', (req: Request, res: Response) => {
 
 /// AJOUTER UN OBJECTIF ///
 
-router.post('/lens', (req: Request, res: Response) => {
-  if (!checkBody(req.body, ['brand', 'model'])) {
-    res.json({ result: false, error: 'Missing or empty fields' });
-    return;
-  }
+router.post('/lenses/:id', async (req: Request, res: Response) => {
+  try {
+      if (!checkBody(req.body, ['brand', 'model'])) {
+          return res.json({ result: false, error: 'Missing or empty fields' });
+      }
 
-  Lens.findOne({ brand: req.body.brand, model: req.body.model })
-    .then((existingLens: LensType | null) => {
+      const existingLens = await Lens.findOne({ brand: req.body.brand, model : req.body.model });
+      console.log(existingLens)
       if (existingLens) {
-        res.json({ result: false, error: 'Lens already exists' });
-        return;
+          return res.json({ result: false, message: "Lens with this name already exists" });
       }
 
       const newLens = new Lens({
-        brand: req.body.brand,
-        model: req.body.model,
+          brand: req.body.brand,
+          model: req.body.model,
       });
 
-      newLens.save().then((savedLens: LensType) => {
-        res.json({ result: true, newLens: savedLens, id: savedLens._id });
+      await newLens.save()
+      .then ( async (lens : LensType) => {
+           await UserProfile.findByIdAndUpdate(
+          { _id: req.params.id },
+          { $push: { lenses: lens._id } },
+          { new: true }
+      );
+      console.log(newLens)
+
+      return res.json({ result: true, newLens, id: lens._id });
       });
-    })
+
+  } catch (error) {
+      console.error(error);
+      return res.status(500).json({ result: false, error: "Internal server error" });
+  }
 });
 
 /// SUPPRIMER UN OBJECTIF ///
 
-router.delete("/lens/:id", (req: Request, res: Response) => {
+router.delete('/lens/:id', (req: Request, res: Response) => {
   const lensId = req.params.id;
 
   Lens.deleteOne({ _id: lensId })
