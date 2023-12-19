@@ -73,7 +73,7 @@ router.post('/cameras/:id', async (req: Request, res: Response) => {
       { new: true }
     );
 
-    return res.json({ result: true, newCamera, id: newCamera._id });
+    return res.json({ result: true, message: "New camera added to user profile", camera: { id: newCamera._id, brand: newCamera.brand, model: newCamera.model } });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ result: false, error: "Internal server error" });
@@ -166,7 +166,7 @@ router.post('/lenses/:id', async (req: Request, res: Response) => {
       { new: true }
     );
 
-    return res.json({ result: true, newLens, id: newLens._id });
+    return res.json({ result: true, message: "New lens added to user profile", lens: { id: newLens._id, brand: newLens.brand, model: newLens.model } });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ result: false, error: "Internal server error" });
