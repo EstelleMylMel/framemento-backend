@@ -33,76 +33,77 @@ router.get('/camera/:id', (req: Request, res: Response) => {
 
 /// AJOUTER UNE CAMERA ///
 
-router.post('/camera/:id', async (req: Request, res: Response) => {
+router.post('/cameras/:id', async (req: Request, res: Response) => {
   try {
-      if (!checkBody(req.body, ['brand', 'model'])) {
-          return res.json({ result: false, error: 'Missing or empty fields' });
-      }
+    if (!checkBody(req.body, ['brand', 'model'])) {
+      return res.json({ result: false, error: 'Missing or empty fields' });
+    }
 
-      const existingCamera = await Camera.findOne({ brand: req.body.brand, model : req.body.model });
-      console.log(existingCamera)
-      if (existingCamera) {
-          return res.json({ result: false, message: "Camera with this name already exists" });
-      }
+    const existingCamera = await Camera.findOne({ brand: req.body.brand, model: req.body.model });
 
-      const newCamera = new Camera({
-          brand: req.body.brand,
-          model: req.body.model,
-      });
+    if (existingCamera) {
+      const userProfile = await UserProfile.findById(req.params.id);
 
-      await newCamera.save()
-      .then ( async (camera : CameraType) => {
-           await UserProfile.findByIdAndUpdate(
+      if (!userProfile.cameras.includes(existingCamera._id)) {
+        // Si la camera existe dans la collection Camera mais pas dans userProfile.cameras
+        await UserProfile.findByIdAndUpdate(
           { _id: req.params.id },
-          { $push: { cameras: camera._id } },
+          { $push: { cameras: existingCamera._id } },
           { new: true }
-      );
-      console.log(newCamera)
+        );
 
-      return res.json({ result: true, newCamera, id: camera._id });
-      });
+        return res.json({ result: true, message: "Camera added to user profile", camera: {id: existingCamera._id, brand: existingCamera.brand, model: existingCamera.model} });
+      } else {
+        // Si la camera existe déjà dans userProfile.cameras
+        return res.json({ result: false, message: "Camera already exists in user profile" });
+      }
+    }
 
-   
+    // Si la camera n'existe pas du tout, on la crée
+    const newCamera= new Camera({
+      brand: req.body.brand,
+      model: req.body.model,
+    });
+
+    await newCamera.save();
+
+    await UserProfile.findByIdAndUpdate(
+      { _id: req.params.id },
+      { $push: { cameras: newCamera._id } },
+      { new: true }
+    );
+
+    return res.json({ result: true, newCamera, id: newCamera._id });
   } catch (error) {
-      console.error(error);
-      return res.status(500).json({ result: false, error: "Internal server error" });
+    console.error(error);
+    return res.status(500).json({ result: false, error: "Internal server error" });
   }
 });
 
 
 /// SUPPRIMER UNE CAMERA ///
 
-router.delete('/camera/:id', (req: Request, res: Response) => {
+router.delete('/camera/:id', async (req: Request, res: Response) => {
   const cameraId = req.params.id;
 
-  Camera.deleteOne({ _id: cameraId })
-    .then((deletedCamera: any) => {
-      console.log(deletedCamera)
-      if (deletedCamera.deletedCount > 0) {
-        return UserProfile.updateOne(
-          { cameras: cameraId },
-          { $pull: { cameras: cameraId } }
-        );
-      } else {
-        res.json({ result : false, error: "Camera not found" })
-      }
-    })
-    .then((result: any) => {
-      if (result.modifiedCount > 0) {
-        // Si au moins un document a été modifié, cela signifie que la caméra a été retiré avec succès
-        res.json({ result: true, message: "Camera deleted successfully" });
-        console.log(result)
-      } else {
-            // Si aucun document n'a été modifié, cela signifie que la caméra n'a pas été trouvée dans le profil utilisateur
-        res.json({ result: false, error: "Camera not found" });
-        console.log(result)
-      }
-    })
-    .catch((error: Error) => {
-      // Gérer les erreurs ici
-      console.error("Error deleting camera:", error);
-      res.status(500).json({ result: false, error: "Internal server error" });
-    });
+  try {
+    const updatedUserProfile = await UserProfile.updateOne(
+      { cameras: cameraId },
+      { $pull: { cameras: cameraId } }
+    );
+
+    if (updatedUserProfile.modifiedCount > 0) {
+      // Si au moins un document a été modifié, cela signifie que la caméra a été retirée avec succès du userprofile
+      return res.json({ result: true, message: "Camera deleted successfully from userprofile" });
+    } else {
+      // Si aucun document n'a été modifié, cela signifie que la caméra n'a pas été trouvée dans le profil utilisateur
+      return res.json({ result: false, error: "Camera not found in userprofile" });
+    }
+  } catch (error) {
+    // Gérer les erreurs ici
+    console.error("Error deleting camera from userprofile:", error);
+    return res.status(500).json({ result: false, error: "Internal server error" });
+  }
 });
 
 
@@ -127,73 +128,77 @@ router.get('/lens/:id', (req: Request, res: Response) => {
 
 router.post('/lenses/:id', async (req: Request, res: Response) => {
   try {
-      if (!checkBody(req.body, ['brand', 'model'])) {
-          return res.json({ result: false, error: 'Missing or empty fields' });
-      }
+    if (!checkBody(req.body, ['brand', 'model'])) {
+      return res.json({ result: false, error: 'Missing or empty fields' });
+    }
 
-      const existingLens = await Lens.findOne({ brand: req.body.brand, model : req.body.model });
-      console.log(existingLens)
-      if (existingLens) {
-          return res.json({ result: false, message: "Lens with this name already exists" });
-      }
+    const existingLens = await Lens.findOne({ brand: req.body.brand, model: req.body.model });
 
-      const newLens = new Lens({
-          brand: req.body.brand,
-          model: req.body.model,
-      });
+    if (existingLens) {
+      const userProfile = await UserProfile.findById(req.params.id);
 
-      await newLens.save()
-      .then ( async (lens : LensType) => {
-           await UserProfile.findByIdAndUpdate(
+      if (!userProfile.lenses.includes(existingLens._id)) {
+        // Si l'objectif existe dans la collection Lens mais pas dans userProfile.lenses
+        await UserProfile.findByIdAndUpdate(
           { _id: req.params.id },
-          { $push: { lenses: lens._id } },
+          { $push: { lenses: existingLens._id } },
           { new: true }
-      );
-      console.log(newLens)
+        );
 
-      return res.json({ result: true, newLens, id: lens._id });
-      });
+        return res.json({ result: true, message: "Lens added to user profile", lens: {id: existingLens._id, brand: existingLens.brand, model: existingLens.model} });
+      } else {
+        // Si l'objectif existe déjà dans userProfile.lenses
+        return res.json({ result: false, message: "Lens already exists in user profile" });
+      }
+    }
 
+    // Si l'objectif n'existe pas du tout, on le crée
+    const newLens = new Lens({
+      brand: req.body.brand,
+      model: req.body.model,
+    });
+
+    await newLens.save();
+
+    await UserProfile.findByIdAndUpdate(
+      { _id: req.params.id },
+      { $push: { lenses: newLens._id } },
+      { new: true }
+    );
+
+    return res.json({ result: true, newLens, id: newLens._id });
   } catch (error) {
-      console.error(error);
-      return res.status(500).json({ result: false, error: "Internal server error" });
+    console.error(error);
+    return res.status(500).json({ result: false, error: "Internal server error" });
   }
 });
 
+
 /// SUPPRIMER UN OBJECTIF ///
 
-router.delete('/lens/:id', (req: Request, res: Response) => {
+router.delete('/lens/:id', async (req: Request, res: Response) => {
   const lensId = req.params.id;
 
-  Lens.deleteOne({ _id: lensId })
-    .then((deletedLens: any) => {
-      console.log(deletedLens)
-      if (deletedLens.deletedCount > 0) {
-        return UserProfile.updateOne(
-          { lenses: lensId },
-          { $pull: { lenses: lensId } }
-        );
-      } else {
-        res.json({ result : false, error: "Lens not found" })
-      }
-    })
-    .then((result: any) => {
-      if (result.modifiedCount > 0) {
-        // Si au moins un document a été modifié, cela signifie que la caméra a été retirée avec succès
-        res.json({ result: true, message: "Lens deleted successfully" });
-        console.log(result)
-      } else {
-            // Si aucun document n'a été modifié, cela signifie que la caméra n'a pas été trouvée dans le profil utilisateur
-        res.json({ result: false, error: "Lens not found" });
-        console.log(result)
-      }
-    })
-    .catch((error: Error) => {
-      // Gérer les erreurs ici
-      console.error("Error deleting camera:", error);
-      res.status(500).json({ result: false, error: "Internal server error" });
-    });
+  try {
+    const updatedUserProfile = await UserProfile.updateOne(
+      { lenses: lensId },
+      { $pull: { lenses: lensId } }
+    );
+
+    if (updatedUserProfile.modifiedCount > 0) {
+      // Si au moins un document a été modifié, cela signifie que la caméra a été retirée avec succès du userprofile
+      return res.json({ result: true, message: "Lens deleted successfully from userprofile" });
+    } else {
+      // Si aucun document n'a été modifié, cela signifie que la caméra n'a pas été trouvée dans le profil utilisateur
+      return res.json({ result: false, error: "Lens not found in userprofile" });
+    }
+  } catch (error) {
+    // Gérer les erreurs ici
+    console.error("Error deleting lens from userprofile:", error);
+    return res.status(500).json({ result: false, error: "Internal server error" });
+  }
 });
 
-  
+
+ 
 module.exports = router;
