@@ -20,8 +20,6 @@ router.post('/signup', (req: Request, res: Response) => {
     return;
   }
 
-  console.log('coucou')
-
   const { email, username, password } = req.body;
   // EQUIVALENT A :
   // const email = req.body.email;
@@ -40,7 +38,8 @@ router.post('/signup', (req: Request, res: Response) => {
       // 1ère étape : créer un userProfile
       const newUserProfile = new UserProfile({ // FAUT IL TYPER ?? PB AVEC .SAVE
         username,
-        profilePicture: '../assets/image-profil.jpg'
+        profilePicture: '../assets/image-profil.jpg',
+        rollsList: []
       })
       newUserProfile.save().then( (data: UserProfileType) => {
 
@@ -57,7 +56,13 @@ router.post('/signup', (req: Request, res: Response) => {
         })
         newUserConnection.save().then( (data: UserConnectionType) => {
           console.log(data)
-          res.json({ result : true, _id: data.profile._id, username: data.profile.username, token: data.token, rolls: data.profile.rollsList })
+
+          UserProfile.findOne({_id: userProfileID}).populate('rollsList')
+          .then((userdata: UserProfileType) => {
+            
+            res.json({ result : true, _id: userProfileID, username: userdata.username, token: data.token, rolls: userdata.rollsList })
+          })
+
         })   
       })
     } else {
