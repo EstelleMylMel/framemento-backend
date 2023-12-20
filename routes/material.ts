@@ -140,6 +140,23 @@ router.get('/lens/:id', (req: Request, res: Response) => {
     })
   })
 
+
+/// TROUVER UN OBJECTIF EN PARTICULIER ///
+
+router.get('/lenses/:id', (req: Request, res: Response) => {
+  console.log("get lenses :", req.params.id)
+  Lens.findOne({_id: req.params.id})
+  .then((data: LensType[] | null) => {
+      if (data !== null) {
+          res.json({ result: true, lens: data });
+      }
+  else {
+          res.json({ result: false })
+      }
+  });
+})
+
+
 /// AJOUTER UN OBJECTIF ///
 
 router.post('/lenses/:id', async (req: Request, res: Response) => {

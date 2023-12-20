@@ -115,13 +115,17 @@ router.delete("/:userid/:rollid", (req: Request, res: Response) => {
     const userId = req.params.userid;
     
 
+    /// Suppression de la clé étrangère chez UserProfile
     UserProfile.findOneAndUpdate({_id: userId}, {$pull: {rollsList: rollId}}, {new: true})
     .then((user: UserProfileType) => {
         if (user) {
 
-            /// Supprimer toutes les frames de cette pellicule dans la collection rolls
+            /// Supprimer toutes les frames de cette pellicule dans la collection frames
             Roll.findOne({_id: rollId }).populate('framesList')
             .then((roll: RollType) => {
+
+                console.log('roll : ',roll)
+                console.log('roll framelist : ',roll.framesList)
                 if (roll.framesList) {
                 
                  for (const frameId of roll.framesList) {
