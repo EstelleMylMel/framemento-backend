@@ -6,21 +6,32 @@ import * as mongoose from 'mongoose';
 const Lens = require('../models/lenses');
 const Frame = require('../models/frames');
 const { checkBody } = require('../modules/checkBody');
+const UserProfile = require('../models/userProfiles');
+const Roll = require('../models/rolls');
+const Like = require('../models/likes')
 
 // IMPORT TYPES
 import { Request, Response } from 'express';    // types pour (res, req)
 import { FrameType } from '../types/frame';
 import { LensType } from '../types/lens';
+import { UserProfileType } from '../types/userProfile';
+import { RollType } from '../types/roll';
+
+
+// CLOUDINARY //
+const cloudinary = require('cloudinary').v2;
+const fs = require('fs');
+const uniqid = require('uniqid');
 
 // API KEY - WEATHER
 const OWM_API_KEY = process.env.OWM_API_KEY;
 
 
-/// APPUI SUR BOUTON + PHOTO ///
+/// API METEO POUR UNE LOCALISATION DONNEE ///
 
 router.get('/weather/:latitude/:longitude', (req: Request, res: Response) => {
 
-    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${req.params.latitude}&lon=${req.params.longitude}&appid=${OWM_API_KEY}&units=metric`)
+    fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${req.params.latitude}&lon=${req.params.longitude}&appid=${OWM_API_KEY}&units=metric&lang=fr`)
 		.then(response => response.json())
 		.then(apiData => {
             if (apiData !== null) {
@@ -30,19 +41,20 @@ router.get('/weather/:latitude/:longitude', (req: Request, res: Response) => {
                 res.json({ result: false })
             }
         });  
-
 })
 
-
-/// ENREGISTREMENT D'UNE PHOTO ///
+/// ENREGISTREMENT D'UNE FRAME SANS LA PHOTO DU TELEPHONE ///
 
 router.post('/', (req: Request, res: Response) => {
-    if (!checkBody(req.body, ['numero', 'shutterSpeed', 'aperture', 'location', 'date', 'weather', 'shared'])) {
+
+  console.log('avant checkbody');
+    if (!checkBody(req.body, [ 'userProfileID', 'rollID','numero', 'shutterSpeed', 'aperture', 'location', 'date', 'weather', 'brand', 'model'])) {
         res.json({ result: false, error: 'Missing or empty fields' });
         return;
     }
 
-    if (checkBody(req.body, ['brand', 'model'])) {
+    console.log('apres checkbody');
+
       Lens.findOne({ brand: req.body.brand, model: req.body.model })
       .then((data: LensType | null) => {
           if (data === null) {
@@ -52,34 +64,60 @@ router.post('/', (req: Request, res: Response) => {
                   shared: false
               })
 
+              // Enregistrement de l'objectif dans la collection lenses
               newLens.save().then((newDoc: LensType) => {
-                  const newFrame = new Frame({
-                      numero: req.body.numero,
-                      shutterSpeed: req.body.shutterSpeed,
-                      aperture: req.body.aperture,
-                      exposureValue: req.body.exposureValue || null, 
-                      location: req.body.location,
-                      date: req.body.date,
-                      weather: req.body.weather,
-                      camera: req.body.camera, // reprendre l'information de la pellicule
-                      lens: newDoc._id,
-                      title: req.body.title || null,
-                      comment: req.body.comment || null,
-                      favorite: req.body.favorite || false,
-                      shared: req.body.shared || false,
-                      categories: req.body.categories || [],
-                      likes: req.body.likes || [],
-                      commentaries: req.body.commentaries || [],
-                      phonePhoto: req.body.phonePhoto || null,  // uri
-                      argenticPhoto: req.body.argenticPhoto || null,
-                  });
-              
-                  newFrame.save().then((newDoc: FrameType) => {
-                      res.json({ result: true, newFrame: newDoc, id: newDoc._id });
-                  }); 
+
+                // Enregistrement de l'objectif dans la collection userProfiles
+                UserProfile.findByIdAndUpdate({_id: req.body.userProfileID}, {$push: {lenses: newDoc._id}}, {new: true})
+                .then((userProfileData: UserProfileType | null) => {});
+
+                const newFrame = new Frame({
+                    numero: req.body.numero,
+                    shutterSpeed: req.body.shutterSpeed,
+                    aperture: req.body.aperture,
+                    exposureValue: req.body.exposureValue || null, 
+                    location: req.body.location,
+                    date: req.body.date,
+                    weather: req.body.weather,
+                    camera: req.body.camera, // reprendre l'information de la pellicule
+                    lens: newDoc._id,
+                    title: req.body.title || null,
+                    comment: req.body.comment || null,
+                    favorite: req.body.favorite || false,
+                    shared: req.body.shared || false,
+                    categories: [req.body.categories] || [],
+                    likes: [req.body.likes] || [],
+                    commentaries: [],
+                    phonePhoto: req.body.phonePhoto || null,  // uri
+                    argenticPhoto: null,
+                });
+
+                // Enregistrement dans la collection frames
+            
+                newFrame.save().then((newDoc: FrameType) => {
+
+                  // Enregistrement de la frame dans la collection rolls
+                    Roll.findByIdAndUpdate({_id: req.body.rollID}, {$push: {framesList: newDoc._id}}, {new: true})
+                    .then((rollData: RollType) => {
+                      UserProfile.findByIdAndUpdate({_id : req.body.userProfileID}, {$push: {framesList: newDoc._id}}, {new: true})
+                      .then((userProfileData: UserProfileType) => {
+                        res.json({ result: true, newFrame: newDoc, id: newDoc._id });
+                      }) 
+                    })
+                }); 
               })
+
+             
           }
           else {
+
+            /// Vérifier que le user possède déjà cette lens ou pas 
+            UserProfile.findOne({_id: req.body.userProfileID})
+            .then((userProfileData: UserProfileType) => {
+              userProfileData.lenses?.includes(data._id) ?
+              undefined : UserProfile.findByIdAndUpdate({_id : req.body.userProfileID}, {$push: {lenses: data._id}}, {new: true});
+            })
+
               const newFrame = new Frame({
                   numero: req.body.numero,
                   shutterSpeed: req.body.shutterSpeed,
@@ -89,25 +127,52 @@ router.post('/', (req: Request, res: Response) => {
                   date: req.body.date,
                   weather: req.body.weather,
                   camera: req.body.camera, // reprendre l'information de la pellicule
-                  lens: data,
+                  lens: data._id,
                   title: req.body.title || null,
                   comment: req.body.comment || null,
                   favorite: req.body.favorite || false,
                   shared: req.body.shared || false,
-                  categories: req.body.categories || [],
-                  likes: req.body.likes || [],
-                  commentaries: req.body.commentaries || [],
+                  categories: [req.body.categories] || [],
+                  likes: [req.body.likes] || [],
+                  commentaries: [],
                   phonePhoto: req.body.phonePhoto || null,  // uri
-                  argenticPhoto: req.body.argenticPhoto || null,
+                  argenticPhoto: null,
             });
-            
+
+            // Enregistrement dans la collection frames
               newFrame.save().then((newDoc: FrameType) => {
-                res.json({ result: true, newFrame: newDoc, id: newDoc._id });
+                // Enregistrement de la frame dans la collection rolls
+                Roll.findByIdAndUpdate({_id: req.body.rollID}, {$push: {framesList: newDoc._id}}, {new: true})
+                .then((rollData: RollType) => {
+                  // ajouter Frame id à userProfile ici
+                  UserProfile.findByIdAndUpdate({_id : req.body.userProfileID}, {$push: {framesList: newDoc._id}}, {new: true})
+                  .then((userProfileData: UserProfileType) => {
+                    res.json({ result: true, newFrame: newDoc, id: newDoc._id });
+                  }) 
+                })
               });       
 
           }
       })
-    }
+})
+
+/// AJOUTER LA PHOTO DU TELEPHONE ///
+
+router.post('/upload', async (req: any, res: Response) => {
+  
+  console.log('body: ', req.files.photoFromFront)
+  const photoPath = `./tmp/${uniqid()}.jpg`;
+  const resultMove = await req.files.photoFromFront.mv(photoPath);
+
+  if(!resultMove) {
+    //
+    const resultCloudinary = await cloudinary.uploader.upload(photoPath);
+    fs.unlinkSync(photoPath);
+
+    res.json({ result: true, url: resultCloudinary.secure_url });      
+  } else {
+    res.json({ result: false, error: 'error' });
+  }
 })
 
 
@@ -115,6 +180,8 @@ router.post('/', (req: Request, res: Response) => {
 
 router.get('/:id', (req: Request, res: Response) => {
     Frame.findOne({ _id: req.params.id })
+    .populate('camera')
+    .populate('lens')
     .then((data: FrameType | null) => {
         if (data !== null) {
             res.json({ result: true, frame: data })
@@ -129,18 +196,59 @@ router.get('/:id', (req: Request, res: Response) => {
 })
 
 
+/// CONSULTER TOUTES LES IMAGES AVEC SHARED = TRUE ///
+
+router.get('/shared/true', (req: Request, res: Response) => {
+  Frame.find({ shared: true })
+  .then((data: FrameType[]) => {
+      if (data.length > 0) {
+          res.json({ result: true, frames: data })
+      }
+      else {
+          res.json({ result: false })
+      }
+  })
+  .catch((error: Error) => {
+      res.status(500).json({ result: false, message: "Erreur lors de la récupération des images", error: error.message });
+  });
+})
+
+/// CONSULTER LES INFORMATIONS DE L'IMAGE PRECEDENTE
+
+
 /// SUPPRIMER UNE IMAGE EN PARTICULIER ///
 
-router.delete("/:id", (req: Request, res: Response) => {
-  const frameId = req.params.id;
+router.delete("/:userid/:rollid/:frameid", (req: Request, res: Response) => {
 
-  Frame.deleteOne({ _id: frameId }).then((deletedFrame: any) => {
-      if (deletedFrame) {
-        res.json({ result: true, message: "Frame deleted successfully"})
-      } else {
-        res.json({ result: false, error: "Frame not found" });
-      }
-  });
+  const frameId = req.params.frameid;
+  const userId = req.params.userid;
+  const rollId = req.params.rollId;
+
+  // supprimer la frame dans la collection UserProfile
+  UserProfile.findOneAndUpdate({ _id: userId }, {$pull: {framesList: frameId}}, {new: true})
+  .then((userProfile: UserProfileType)=> {
+
+    console.log(userProfile);
+    if (userProfile) {
+
+    // supprimer la frame dans la collection rolls
+    Roll.findOneAndUpdate({ _id: rollId }, {$pull: {framesList: frameId}}, {new: true})
+    .then((roll: RollType)=> {
+
+      // supprimer la frame dans la collection frames
+      Frame.deleteOne({ _id: frameId }).then((deletedFrame: any) => {
+        if (deletedFrame) {
+          res.json({ result: true, message: "Frame deleted successfully"})
+        } else {
+          res.json({ result: false, error: "Frame not found" });
+        }
+    });
+    })
+  } else console.log('user profile not found')
+}
+  )
+
+  
     
 });
 
@@ -177,7 +285,118 @@ router.put('/:id', async (req: Request, res: Response) => {
       res.status(500).json({ result: false, error: 'Internal Server Error' });
   }
 });
-     
+
+
+
+/// LIKER ET UNLIKER UNE FRAME ///
+
+router.put("/:frameID/like", (req: Request, res: Response) => {
+
+  // req.body = user.username (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $push: { likes: req.body.username } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, likes: frameData.likes })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
+
+router.put("/:frameID/unlike", (req: Request, res: Response) => {
+
+  // req.body = user._id (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $pull: { likes: req.body.username } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, likes: frameData.likes })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
+
+// route GET search frames shared par category
+router.get('/search/:category', (req: Request, res: Response) => {
+
+  const formattedCategory = req.params.category[0].toUpperCase() + req.params.category.slice(1)
+    
+  Frame.find({categories: {$elemMatch: { $in: [ formattedCategory ]}}}).then((dataFrame: FrameType[] | null) => {
+    if (dataFrame !== null) {
+      res.json({ result: true, frames: dataFrame })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+})
+
+
+/// AJOUTER ET RETIRER UNE CATEGORIE À UNE FRAME ///
+
+router.put("/:frameID/addcategory", (req: Request, res: Response) => {
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $push: { categories: req.body.category } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, categories: frameData.categories })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
+
+router.put("/:frameID/removecategory", (req: Request, res: Response) => {
+
+  // req.body = user._id (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $pull: { categories: req.body.category } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, categories: frameData.categories })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
 
 
 module.exports = router;
@@ -248,7 +467,7 @@ router.get('/location', async (req: Request, res: Response) => {
                               favorite: req.body.favorite || false,
                               shared: req.body.shared || false,
                               categories: req.body.categories || [],
-                              likes: req.body.likes || [],
+                              likes:  || [],
                               commentaries: req.body.commentaries || [],
                               phonePhoto: req.body.phonePhoto || null,  // uri
                               argenticPhoto: req.body.argenticPhoto || null,

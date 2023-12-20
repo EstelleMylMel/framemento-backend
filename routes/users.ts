@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 
 import { UserConnectionType } from '../types/userConnection';
 import { UserProfileType } from '../types/userProfile';
+import { FrameType } from '../types/frame';
 const UserConnection = require('../models/userConnections');
 const UserProfile = require('../models/userProfiles');
 
@@ -101,15 +102,34 @@ router.post('/signin', (req: Request,res: Response) => {
 // route GET
 router.get('/:username', (req: Request, res: Response) => {
     
-  UserProfile.findOne({ username: req.params.username }).populate('rollsList').then((dataProfile: UserProfileType | null) => {
+  UserProfile.findOne({ username: req.params.username }).populate('framesList').populate('cameras').populate('rollsList').then((dataProfile: UserProfileType | null) => {
     if (dataProfile !== null) {
-      res.json({ result: true, rolls: dataProfile.rollsList})
+      res.json({ result: true, user: dataProfile, rolls: dataProfile.rollsList, cameras: dataProfile.cameras, frames: dataProfile.framesList})
     }
     else {
       res.json({ result: false })
     }
   })
 })
+
+// LA DIFFERENCE ENTRE LA ROLLSLIST EN BDD ET LES ROLLS QUI S'AFFICHE SONT LES ROLLS DELETED
+// => LA ROUTE DELETE DOIT SUPPRIMER LES ROLLS DANS LA COLLECTION ROLLS MAIS AUSSI DANS LE USERPROFILE, CE QUI N'EST PAS LE CAS 
+
+
+// route GET search frames shared par username
+router.get('/search/:username', (req: Request, res: Response) => {
+    
+  UserProfile.findOne({ username: req.params.username }).populate('framesList').populate('cameras').populate('rollsList').then((dataProfile: UserProfileType | null) => {
+    if (dataProfile !== null) {
+      let framesShared = dataProfile.framesList?.filter((frame: FrameType) => frame.shared === true);
+      res.json({ result: true, user: dataProfile, framesShared})
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+})
+
 
 
 module.exports = router;

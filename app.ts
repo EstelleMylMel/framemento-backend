@@ -12,11 +12,16 @@ var usersRouter = require('./routes/users');
 var rollsRouter = require('./routes/rolls');
 var framesRouter = require('./routes/frames');
 var materialRouter = require('./routes/material');
+var categoriesRouter = require('./routes/categories');
+
 
 var app = express();
 
 const cors = require('cors');
 app.use(cors());
+
+const fileUpload = require('express-fileupload');
+app.use(fileUpload());
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -28,7 +33,10 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/rolls', rollsRouter);
 app.use('/frames', framesRouter);
-app.use('/material', materialRouter)
+app.use('/material', materialRouter);
+app.use('/categories', categoriesRouter);
+
+
 
 app.listen(port, () => {
     console.log(`Server is Fire at http://localhost:${port}`);
