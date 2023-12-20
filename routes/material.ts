@@ -31,6 +31,22 @@ router.get('/camera/:id', (req: Request, res: Response) => {
     })
   })
 
+
+
+/// TROUVER UNE CAMÉRA EN PARTICULIER ///
+
+router.get('/cameras/:id', (req: Request, res: Response) => {
+  Camera.findOne({_id: req.params.id})
+  .then((data: CameraType[] | null) => {
+      if (data !== null) {
+          res.json({ result: true, camera: data });
+      }
+  else {
+          res.json({ result: false })
+      }
+  });
+})
+
 /// AJOUTER UNE CAMERA ///
 
 router.post('/cameras/:id', async (req: Request, res: Response) => {
