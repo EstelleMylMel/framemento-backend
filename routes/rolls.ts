@@ -94,6 +94,7 @@ router.get('/', (req: Request, res: Response) => {
 
 router.get('/:rollID', (req: Request, res: Response) => {
     Roll.findById({ _id: req.params.rollID }).populate('framesList').populate('camera').then((dataRoll: RollType | null) => {
+       
         if (dataRoll !== null) {
           res.json({ result: true, roll: dataRoll, frames: dataRoll.framesList })
         }
