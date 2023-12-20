@@ -136,6 +136,21 @@ router.get('/search/:username', (req: Request, res: Response) => {
 })
 
 
+// route GET pour trouver un user à partir d'une frame
+router.get('/find/:frameId', (req: Request, res: Response) => {
+  
+  const objectId = new mongoose.Types.ObjectId(req.params.frameId)
+
+  UserProfile.findOne({ framesList: objectId }).then((dataProfile: UserProfileType | null) => {
+    if (dataProfile !== null) {
+      res.json({ result: true, user: dataProfile })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+})
+
 
 module.exports = router;
 
