@@ -119,7 +119,7 @@ router.delete("/:userid/:rollid", (req: Request, res: Response) => {
     UserProfile.findOneAndUpdate({_id: userId}, {$pull: {rollsList: rollId}}, {new: true})
     .then((user: UserProfileType) => {
         if (user) {
-
+            /*
             /// Supprimer toutes les frames de cette pellicule dans la collection frames
             Roll.findOne({_id: rollId }).populate('framesList')
             .then((roll: RollType) => {
@@ -135,7 +135,7 @@ router.delete("/:userid/:rollid", (req: Request, res: Response) => {
                  }
                 } 
             })
-
+            */
             /// Supprimer le roll
             Roll.deleteOne({ _id: rollId }).then((deletedRoll: any) => {
                 if (deletedRoll) {

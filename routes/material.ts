@@ -1,5 +1,6 @@
 var express = require('express');
 var router = express.Router();
+import * as mongoose from 'mongoose';
 
 // IMPORT MODULES
 const Camera = require('../models/cameras');
@@ -99,13 +100,14 @@ router.post('/cameras/:id', async (req: Request, res: Response) => {
 
 /// SUPPRIMER UNE CAMERA ///
 
-router.delete('/camera/:id', async (req: Request, res: Response) => {
-  const cameraId = req.params.id;
+router.delete('/camera/:cameraId/:userId', async (req: Request, res: Response) => {
+  // transformation en ObjectId pour pouvoir comparer avec les éléments du tableau lenses dans userProfile
+  const cameraIdObject = new mongoose.Types.ObjectId(req.params.cameraId);
 
   try {
     const updatedUserProfile = await UserProfile.updateOne(
-      { cameras: cameraId },
-      { $pull: { cameras: cameraId } }
+      { _id: req.params.userId },
+      { $pull: { cameras: cameraIdObject } }
     );
 
     if (updatedUserProfile.modifiedCount > 0) {
@@ -209,13 +211,13 @@ router.post('/lenses/:id', async (req: Request, res: Response) => {
 
 /// SUPPRIMER UN OBJECTIF ///
 
-router.delete('/lens/:id', async (req: Request, res: Response) => {
-  const lensId = req.params.id;
+router.delete('/lens/:lensId/:userId', async (req: Request, res: Response) => {
+  const lensIdObject = new mongoose.Types.ObjectId(req.params.lensId);
 
   try {
     const updatedUserProfile = await UserProfile.updateOne(
-      { lenses: lensId },
-      { $pull: { lenses: lensId } }
+      { _id: req.params.userId },
+      { $pull: { lenses: lensIdObject } }
     );
 
     if (updatedUserProfile.modifiedCount > 0) {
