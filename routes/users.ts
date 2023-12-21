@@ -85,14 +85,15 @@ router.post('/signin', (req: Request,res: Response) => {
   UserConnection.findOne({ email }).populate('profile').then((dataConnection: UserConnectionType | null) => {
     if (dataConnection && bcrypt.compareSync(password, dataConnection.password)) {
 
-      UserProfile.findOne({ _id: dataConnection.profile._id}).populate('rollsList').then((dataProfile: UserProfileType | null) => {
+      UserProfile.findOne({ _id: dataConnection.profile._id}).populate('rollsList').populate('framesList').then((dataProfile: UserProfileType | null) => {
         dataProfile ? 
           res.json({ 
             result : true, 
             _id: dataProfile._id, 
             username: dataProfile.username, 
             token: dataConnection.token, 
-            rolls: dataProfile.rollsList
+            rolls: dataProfile.rollsList,
+            frames: dataProfile.framesList
           }) : 
             res.json({ result: false });
       })
