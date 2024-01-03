@@ -10,5 +10,3 @@ export type RollType = Document & {
     camera?: CameraType,
     framesList?: FrameType[]
 };
-
-// Ajout de _id pour être conforme avec TS

@@ -43,7 +43,7 @@ router.get('/weather/:latitude/:longitude', (req: Request, res: Response) => {
         });  
 })
 
-/// ENREGISTREMENT D'UNE FRAME SANS LA PHOTO DU TELEPHONE ///
+/// ENREGISTREMENT D'UNE FRAME AVEC OU SANS LA PHOTO DU TELEPHONE ///
 
 router.post('/', (req: Request, res: Response) => {
 
@@ -79,7 +79,7 @@ router.post('/', (req: Request, res: Response) => {
                     location: req.body.location,
                     date: req.body.date,
                     weather: req.body.weather,
-                    camera: req.body.camera, // reprendre l'information de la pellicule
+                    camera: req.body.camera,
                     lens: newDoc._id,
                     title: req.body.title || null,
                     comment: req.body.comment || null,
@@ -126,7 +126,7 @@ router.post('/', (req: Request, res: Response) => {
                   location: req.body.location,
                   date: req.body.date,
                   weather: req.body.weather,
-                  camera: req.body.camera, // reprendre l'information de la pellicule
+                  camera: req.body.camera, 
                   lens: data._id,
                   title: req.body.title || null,
                   comment: req.body.comment || null,
@@ -156,7 +156,7 @@ router.post('/', (req: Request, res: Response) => {
       })
 })
 
-/// AJOUTER LA PHOTO DU TELEPHONE ///
+/// AJOUTER LA PHOTO DU TELEPHONE SUR CLOUDINARY ///
 
 router.post('/upload', async (req: any, res: Response) => {
   
@@ -176,7 +176,7 @@ router.post('/upload', async (req: any, res: Response) => {
 })
 
 
-/// CONSULTER UNE IMAGE EN PARTICULIER - AFFICHER LES DÉTAILS DE LA PHOTO (GESTION DANS LE FRONT) ///
+/// CONSULTER UNE IMAGE EN PARTICULIER  ///
 
 router.get('/:id', (req: Request, res: Response) => {
     Frame.findOne({ _id: req.params.id })
@@ -196,7 +196,7 @@ router.get('/:id', (req: Request, res: Response) => {
 })
 
 
-/// CONSULTER TOUTES LES IMAGES AVEC SHARED = TRUE ///
+/// CONSULTER TOUTES LES IMAGES PARTAGEES A LA COMMUNAUTE ///
 
 router.get('/shared/true', (req: Request, res: Response) => {
   Frame.find({ shared: true })
@@ -212,8 +212,6 @@ router.get('/shared/true', (req: Request, res: Response) => {
       res.status(500).json({ result: false, message: "Erreur lors de la récupération des images", error: error.message });
   });
 })
-
-/// CONSULTER LES INFORMATIONS DE L'IMAGE PRECEDENTE
 
 
 /// SUPPRIMER UNE IMAGE EN PARTICULIER ///
@@ -288,54 +286,6 @@ router.put('/:id', async (req: Request, res: Response) => {
 
 
 
-/// LIKER ET UNLIKER UNE FRAME ///
-
-router.put("/:frameID/like", (req: Request, res: Response) => {
-
-  // req.body = user.username (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
-
-  Frame.findByIdAndUpdate(
-    { _id: req.params.frameID },
-    { $push: { likes: req.body.username } },
-    { new: true }
-  )
-  .then((frameData: FrameType) => {
-    if (frameData) {
-      res.json({ result: true, newFrame: frameData, likes: frameData.likes })
-    }
-    else {
-      res.json({ result: false })
-    }
-  })
-  .catch((err: Error) => {
-    res.json({ result: false, error: err.message })
-  })
-})
-
-
-router.put("/:frameID/unlike", (req: Request, res: Response) => {
-
-  // req.body = user._id (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
-
-  Frame.findByIdAndUpdate(
-    { _id: req.params.frameID },
-    { $pull: { likes: req.body.username } },
-    { new: true }
-  )
-  .then((frameData: FrameType) => {
-    if (frameData) {
-      res.json({ result: true, newFrame: frameData, likes: frameData.likes })
-    }
-    else {
-      res.json({ result: false })
-    }
-  })
-  .catch((err: Error) => {
-    res.json({ result: false, error: err.message })
-  })
-})
-
-
 // route GET search frames shared par category
 router.get('/search/:category', (req: Request, res: Response) => {
 
@@ -397,89 +347,55 @@ router.put("/:frameID/removecategory", (req: Request, res: Response) => {
   })
 })
 
+//// ===== ROUTES NON UTILISEES PAR MANQUE DE TEMPS ==== ///
+
+/// LIKER ET UNLIKER UNE FRAME ///
+
+router.put("/:frameID/like", (req: Request, res: Response) => {
+
+  // req.body = user.username (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $push: { likes: req.body.username } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, likes: frameData.likes })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
+
+router.put("/:frameID/unlike", (req: Request, res: Response) => {
+
+  // req.body = user._id (likes stocke l'ensemble des id des users qui likent, ici user désigne le user dans le store)
+
+  Frame.findByIdAndUpdate(
+    { _id: req.params.frameID },
+    { $pull: { likes: req.body.username } },
+    { new: true }
+  )
+  .then((frameData: FrameType) => {
+    if (frameData) {
+      res.json({ result: true, newFrame: frameData, likes: frameData.likes })
+    }
+    else {
+      res.json({ result: false })
+    }
+  })
+  .catch((err: Error) => {
+    res.json({ result: false, error: err.message })
+  })
+})
+
 
 
 module.exports = router;
-
-
-
-
-
-
-
-/*
-router.get('/location', async (req: Request, res: Response) => {
-    try {
-      // Demande les permissions d'accès à la localisation
-      const { status } = await Location.requestForegroundPermissionsAsync();
-  
-      if (status !== 'granted') {
-        return res.status(403).json({ error: 'Permission denied for location access' });
-      }
-  
-      // Obtient la géolocalisation
-      const location = await Location.getCurrentPositionAsync({});
-  
-      // Obtient les données météo pour la géolocalisation
-      const weatherApiKey = 'YOUR_OPENWEATHERMAP_API_KEY';
-      const weatherApiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${location.coords.latitude}&lon=${location.coords.longitude}&appid=${weatherApiKey}`;
-      const weatherResponse = await fetch(weatherApiUrl);
-      const weatherData = await weatherResponse.json();
-  
-      // Renvoie la réponse avec la géolocalisation, la date actuelle et les données météo
-      res.json({
-        result: true,
-        data: {
-          location: {
-            latitude: location.coords.latitude,
-            longitude: location.coords.longitude,
-          },
-          date: moment().toISOString(),
-          weather: weatherData,
-        },
-      });
-    } catch (error) {
-      console.error('Error getting location and weather:', error);
-      res.status(500).json({ result: false, error: 'Internal Server Error' });
-    }
-  });
-  */
-
-
-
-  /* AVEC VERIFICATION SI NUMERO EXISTANT
-  newLens.save().then((newDoc: LensType) => {
-                  Frame.findOne({ numero: req.body.numero })
-                  .then((data: FrameType | null) => {
-                      if (data === null) {
-                          const newFrame = new Frame({
-                              numero: req.body.numero,
-                              shutterSpeed: req.body.shutterSpeed,
-                              aperture: req.body.aperture,
-                              exposureValue: req.body.exposureValue || null, 
-                              location: req.body.location,
-                              date: req.body.date,
-                              weather: req.body.weather,
-                              camera: req.body.camera, // reprendre l'information de la pellicule
-                              lens: newDoc._id,
-                              title: req.body.title || null,
-                              comment: req.body.comment || null,
-                              favorite: req.body.favorite || false,
-                              shared: req.body.shared || false,
-                              categories: req.body.categories || [],
-                              likes:  || [],
-                              commentaries: req.body.commentaries || [],
-                              phonePhoto: req.body.phonePhoto || null,  // uri
-                              argenticPhoto: req.body.argenticPhoto || null,
-                          });
-                      
-                          newFrame.save().then((newDoc: FrameType) => {
-                            res.json({ result: true, newFrame: newDoc, id: newDoc._id });
-                          });
-                      }
-                      else {
-                          res.json({ result: false, message: "Frame with this numero already exists"})
-                      }
-                  })
-              })
-*/

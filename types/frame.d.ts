@@ -10,9 +10,9 @@ export type FrameType = Document & {
     shutterSpeed: string,
     aperture: string,
     exposureValue?: number, 
-    location: string, // voir ce qui est envoyé depuis le front (locapic-part4 - MapScreen - ligne 25)
-    date: Date,  // heure importante pour les réglages
-    weather: string,  // voir ce que nous renvoie l'API
+    location: string, 
+    date: Date,  
+    weather: string,  
     camera?: CameraType,
     lens?: LensType,
     title?: string,

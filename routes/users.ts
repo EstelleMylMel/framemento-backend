@@ -36,7 +36,7 @@ router.post('/signup', (req: Request, res: Response) => {
       const hash = bcrypt.hashSync(password, 10)
       
       // 1ère étape : créer un userProfile
-      const newUserProfile = new UserProfile({ // FAUT IL TYPER ?? PB AVEC .SAVE
+      const newUserProfile = new UserProfile({ 
         username,
         profilePicture: '../assets/image-profil.jpg',
         rollsList: []
@@ -48,7 +48,7 @@ router.post('/signup', (req: Request, res: Response) => {
         // commentaire pour créer une modif -> à enlever
 
         //2ème étape : créer un userConnection
-        const newUserConnection = new UserConnection({ // FAUT IL TYPER ?? PB AVEC .SAVE
+        const newUserConnection = new UserConnection({ 
           email,
           password: hash,
           token: uid2(32),
@@ -118,9 +118,6 @@ router.get('/:username', (req: Request, res: Response) => {
   })
 })
 
-// LA DIFFERENCE ENTRE LA ROLLSLIST EN BDD ET LES ROLLS QUI S'AFFICHE SONT LES ROLLS DELETED
-// => LA ROUTE DELETE DOIT SUPPRIMER LES ROLLS DANS LA COLLECTION ROLLS MAIS AUSSI DANS LE USERPROFILE, CE QUI N'EST PAS LE CAS 
-
 
 // route GET search frames shared par username
 router.get('/search/:username', (req: Request, res: Response) => {
@@ -154,15 +151,3 @@ router.get('/find/:frameId', (req: Request, res: Response) => {
 
 
 module.exports = router;
-
-
-
-/*
-UserConnection.findOne({ email }).populate('profile').populate('rollsList').then((data: UserConnectionType | null) => {
-    if (data && bcrypt.compareSync(password, data.password)) {
-      res.json({ result : true, _id: data.profile._id, username: data.profile.username, token: data.token, rolls: data.profile.rollsList});
-    } else {
-      res.json({ result: false, error: 'User not found or wrong password' });
-    }
-  })
-*/

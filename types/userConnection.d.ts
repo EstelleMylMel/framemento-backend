@@ -6,5 +6,4 @@ export type UserConnectionType = Document & {
     password: string,
     token: string,
     profile: UserProfileType
-    // profile: { type: mongoose.Schema.Types.ObjectId, ref: 'userProfiles' }
 };
