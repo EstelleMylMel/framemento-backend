@@ -157,7 +157,6 @@ router.post('/', (req: Request, res: Response) => {
 
 router.post('/upload', async (req: any, res: Response) => {
   
-  console.log('body: ', req.files.photoFromFront)
   const photoPath = `./tmp/${uniqid()}.jpg`;
   const resultMove = await req.files.photoFromFront.mv(photoPath);
 
@@ -223,7 +222,6 @@ router.delete("/:userid/:rollid/:frameid", (req: Request, res: Response) => {
   UserProfile.findOneAndUpdate({ _id: userId }, {$pull: {framesList: frameId}}, {new: true})
   .then((userProfile: UserProfileType)=> {
 
-    console.log(userProfile);
     if (userProfile) {
 
     // supprimer la frame dans la collection rolls
@@ -276,7 +274,6 @@ router.put('/:id', async (req: Request, res: Response) => {
       res.json({ result: true, updatedFrame });
   } catch (error) {
       // Gérez les erreurs
-      console.error('Error updating roll:', error);
       res.status(500).json({ result: false, error: 'Internal Server Error' });
   }
 });
