@@ -47,13 +47,10 @@ router.get('/weather/:latitude/:longitude', (req: Request, res: Response) => {
 
 router.post('/', (req: Request, res: Response) => {
 
-  console.log('avant checkbody');
     if (!checkBody(req.body, [ 'userProfileID', 'rollID','numero', 'shutterSpeed', 'aperture', 'location', 'date', 'weather', 'brand', 'model'])) {
         res.json({ result: false, error: 'Missing or empty fields' });
         return;
     }
-
-    console.log('apres checkbody');
 
       Lens.findOne({ brand: req.body.brand, model: req.body.model })
       .then((data: LensType | null) => {
